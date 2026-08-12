@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#152941">
+<title>Хөргүүрийн бүртгэл</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============ НЭВТРЭХ ============ -->
+<div class="screen active" id="scrLogin">
+  <div class="login-box">
+    <h1>Хөргүүрийн бүртгэл</h1>
+    <p class="lead">Кодоо оруулж нэвтэрнэ үү</p>
+    <div class="code-inputs">
+      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="1-р орон">
+      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="2-р орон">
+      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="3-р орон">
+      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="4-р орон">
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn btn-in" onclick="checkCode()">Нэвтрэх</button>
+    <div class="hint">Ажилчин 1234 · Админ 9999</div>
+  </div>
+</div>
+
+<!-- ============ ҮНДСЭН ЦЭС ============ -->
+<div class="screen" id="scrHome">
+  <h1 class="page-title">Үндсэн цэс</h1>
+  <div class="sub"><span id="homeDate"></span> · <span id="syncLine"></span></div>
+  <div class="menu">
+    <button class="btn btn-in" onclick="openDash()" id="btnDash">Хяналтын самбар</button>
+    <button class="btn" onclick="openFridge(1)" id="btnF1">1-р хөргүүр</button>
+    <button class="btn" onclick="openFridge(2)" id="btnF2">2-р хөргүүр</button>
+    <button class="btn" onclick="openBuy()" id="btnBuy">Гаднаас худалдаж авсан</button>
+    <button class="btn" onclick="openSalary()">Цалин</button>
+    <button class="btn" onclick="openAdmin()" id="btnAdmin">Тохиргоо</button>
+  </div>
+  <button class="logout" onclick="logout()">Гарах</button>
+</div>
+
+<!-- ============ ХЯНАЛТЫН САМБАР ============ -->
+<div class="screen" id="scrDash">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Хяналтын самбар</h2></div>
+  <div class="card">
+    <h3>Огноо</h3>
+    <input type="date" class="date-in" id="dashDate" onchange="setDashDate(this.value)">
+  </div>
+  <div class="card"><h3>Одоогийн үлдэгдэл</h3><div class="scroll-box" id="dashStock"></div></div>
+  <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
+  <div class="card"><h3>Тэр өдөр гарсан</h3><div id="dashOut"></div></div>
+  <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
+  <div class="card"><h3>Ажилчдын цалин</h3><div id="dashPay"></div></div>
+  <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
+</div>
+
+<!-- ============ ХӨРГҮҮР ============ -->
+<div class="screen" id="scrFridge">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="frTitle"></h2></div>
+  <div class="card"><h3>Үлдэгдэл · <span id="frDate"></span></h3><div class="scroll-box" id="frList"></div></div>
+  <div class="row-2">
+    <button class="btn btn-in" onclick="openEntry()">Оруулах</button>
+    <button class="btn btn-out" onclick="openOut()">Гаргах</button>
+  </div>
+  <div class="card"><h3 id="mvTitle">Өнөөдөр</h3><div class="scroll-box" id="mvList"></div></div>
+</div>
+
+<!-- ============ ОРУУЛАХ ============ -->
+<div class="screen" id="scrEntry">
+  <div class="bar"><button class="back" onclick="backToFridge()">Буцах</button><h2 id="enTitle"></h2></div>
+  <div class="card">
+    <h3>Огноо</h3>
+    <input type="date" class="date-in" id="enDate" onchange="setEntryDate(this.value)">
+  </div>
+  <div class="card">
+    <h3>Оруулах бараа</h3>
+    <div class="tool-row">
+      <button onclick="pickAll('entry',true)">Бүгдийг сонгох</button>
+      <button onclick="pickAll('entry',false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="entryItems"></div>
+  </div>
+  <div class="card">
+    <h3>Ажилласан ажилчид</h3>
+    <div class="tool-row">
+      <button onclick="allEntryWorkers(true)">Бүгдийг сонгох</button>
+      <button onclick="allEntryWorkers(false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="entryWorkers"></div>
+  </div>
+  <div class="card">
+    <h3>Цалингийн тооцоо</h3>
+    <div id="entryCalc"></div>
+  </div>
+  <div class="save-wrap"><button class="btn btn-in" id="entrySave" onclick="saveEntry()">Хадгалах</button></div>
+</div>
+
+<!-- ============ ГАДНААС ХУДАЛДАЖ АВСАН ============ -->
+<div class="screen" id="scrBuy">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Гаднаас авсан</h2></div>
+  <div class="card">
+    <h3>Огноо</h3>
+    <input type="date" class="date-in" id="buyDate" onchange="setBuyDate(this.value)">
+  </div>
+  <div class="card">
+    <h3>Аль хөргүүрт хийх вэ</h3>
+    <div class="seg" style="margin:0" id="buySeg">
+      <button class="on" onclick="setBuyFridge(1,this)" id="buyBtn1">1-р хөргүүр</button>
+      <button onclick="setBuyFridge(2,this)" id="buyBtn2">2-р хөргүүр</button>
+    </div>
+  </div>
+  <div class="card">
+    <p class="label">Хэнээс авсан</p>
+    <div class="sel" id="sel_supplier"></div>
+    <div class="stack" id="buyOrgBox" style="display:none;margin-top:12px">
+      <input type="text" id="bsName" placeholder="Байгууллагын нэр">
+      <input type="text" id="bsReg" placeholder="Регистрийн дугаар">
+      <input type="tel"  id="bsPhone" placeholder="Утас">
+      <button class="btn btn-in btn-sm" onclick="addSupplierInline()">Нэмээд сонгох</button>
+    </div>
+    <div class="stack" id="buyPersonBox" style="display:none;margin-top:12px">
+      <input type="text" id="bpName" placeholder="Хувь хүний нэр" oninput="buySupName(this.value)">
+      <input type="tel"  id="bpPhone" placeholder="Утас" oninput="buySupPhone(this.value)" style="margin-bottom:0">
+    </div>
+  </div>
+  <div class="card">
+    <h3>Авсан бараа</h3>
+    <div class="tool-row">
+      <button onclick="pickAll('buy',true)">Бүгдийг сонгох</button>
+      <button onclick="pickAll('buy',false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="buyItems"></div>
+    <div id="buyTotal"></div>
+  </div>
+  <div class="save-wrap"><button class="btn btn-in" id="buySave" onclick="saveBuy()">Хадгалах</button></div>
+</div>
+
+<!-- ============ ГАРГАХ ============ -->
+<div class="screen" id="scrOut">
+  <div class="bar"><button class="back" onclick="leaveOut()">Буцах</button><h2 id="outTitle"></h2></div>
+  <div class="card">
+    <p class="label">Хүлээн авагч</p>
+    <div class="sel" id="sel_partner"></div>
+    <div class="stack" id="newOrgBox" style="display:none;margin-top:12px">
+      <input type="text" id="noName" placeholder="Байгууллагын нэр">
+      <input type="text" id="noReg" placeholder="Регистрийн дугаар">
+      <input type="tel"  id="noPhone" placeholder="Утас">
+      <button class="btn btn-in btn-sm" onclick="addOrgInline()">Нэмээд сонгох</button>
+    </div>
+    <div class="stack" id="personBox" style="display:none;margin-top:12px">
+      <input type="text" id="personName" placeholder="Хувь хүний нэр" oninput="outPersonName(this.value)">
+      <input type="tel"  id="personPhone" placeholder="Утас" oninput="outPersonPhone(this.value)" style="margin-bottom:0">
+    </div>
+  </div>
+  <div class="card">
+    <p class="label">Олгосон ажилтан</p>
+    <div class="sel" id="sel_issuer"></div>
+  </div>
+  <div class="card">
+    <h3>Гаргах бараа</h3>
+    <div class="tool-row">
+      <button onclick="pickAll('out',true)">Бүгдийг сонгох</button>
+      <button onclick="pickAll('out',false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="outItems"></div>
+    <div id="outTotal"></div>
+  </div>
+  <div class="save-wrap"><button class="btn btn-out" id="outSave" onclick="makeReceipt()">Баримт гаргах</button></div>
+</div>
+
+<!-- ============ БАРИМТ ============ -->
+<div class="screen" id="scrReceipt">
+  <div class="bar"><button class="back" onclick="closeReceipt()">Буцах</button><h2>Төлбөрийн баримт</h2></div>
+  <div id="rcBody"></div>
+  <div class="row-2 no-print">
+    <button class="btn btn-in btn-sm" onclick="printReceipt()">2 хувь хэвлэх</button>
+    <button class="btn btn-sm" onclick="editCurrentReceipt()">Засах</button>
+    <button class="btn btn-sm" onclick="closeReceipt()">Хаах</button>
+  </div>
+</div>
+
+<!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
+<div class="screen" id="scrDebt">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
+  <div class="seg" id="debtSeg">
+    <button class="on" onclick="setDebtKind('due',this)">Авлага</button>
+    <button onclick="setDebtKind('owe',this)">Өглөг</button>
+  </div>
+  <div class="card">
+    <h3>Шүүлтүүр</h3>
+    <p class="label">Он, сар</p>
+    <input type="month" class="date-in" id="debtMonth" onchange="setDebtMonth(this.value)">
+    <p class="label" style="margin-top:14px">Нэрээр хайх</p>
+    <input type="text" class="search-in" id="debtSearch" placeholder="Байгууллага, хүний нэр" oninput="setDebtSearch(this.value)">
+    <div class="tool-row" style="margin:12px 0 0">
+      <button class="on" id="dbShow1" onclick="setDebtShow('open',this)">Үлдэгдэлтэй</button>
+      <button id="dbShow2" onclick="setDebtShow('done',this)">Дууссан</button>
+      <button id="dbShow3" onclick="setDebtShow('all',this)">Бүгд</button>
+    </div>
+  </div>
+  <div class="card"><h3>Дүн</h3><div id="debtSummary"></div></div>
+  <div class="card"><h3>Харилцагчид</h3><div class="scroll-box" style="max-height:58vh" id="debtList"></div></div>
+</div>
+
+<!-- ============ БАРИМТ, ТҮҮХ ============ -->
+<div class="screen" id="scrRecords">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Баримт, түүх</h2></div>
+  <div class="card">
+    <h3>Сүүлийн 100 бүртгэл</h3>
+    <div class="tool-row"><button onclick="deleteSelectedLogs()">Сонгосныг устгах</button></div>
+    <div class="scroll-box" style="max-height:64vh" id="recList"></div>
+  </div>
+</div>
+
+<div class="screen" id="scrAudit">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Засварын түүх</h2></div>
+  <div class="card">
+    <h3>Баримтад хийсэн засварууд</h3>
+    <div class="tool-row"><button onclick="deleteSelectedAudits()">Сонгосныг устгах</button></div>
+    <div class="scroll-box" style="max-height:64vh" id="auditList"></div>
+  </div>
+</div>
+
+<!-- ============ ЦАЛИН ============ -->
+<div class="screen" id="scrSalary">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Цалин</h2></div>
+  <div class="sub" id="salNote" style="display:none">Өнөөдрийн бүртгэлээ шалгах</div>
+  <div class="seg" id="salSeg">
+    <button class="on" onclick="setPeriod('day',this)">Өнөөдөр</button>
+    <button onclick="setPeriod('month',this)">Энэ сар</button>
+    <button onclick="setPeriod('all',this)">Бүгд</button>
+  </div>
+  <div class="card"><div class="scroll-box" style="max-height:70vh" id="salList"></div></div>
+</div>
+
+<!-- ============ ТОХИРГОО ============ -->
+<div class="screen" id="scrAdmin">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тохиргоо</h2></div>
+  <div class="menu">
+    <button class="btn" onclick="openDebt()">Өглөг, авлага</button>
+    <button class="btn" onclick="openRecords()">Баримт, түүх</button>
+    <button class="btn" onclick="openAudit()">Засварын түүх</button>
+    <button class="btn" onclick="openItems()">Бараа, үнэ</button>
+    <button class="btn" onclick="openFridgeItems()">Хөргүүрийн ангилал</button>
+    <button class="btn" onclick="openWorkers()">Ажилчид</button>
+    <button class="btn" onclick="openRates()">Цалингийн тариф</button>
+    <button class="btn" onclick="openPartners()">Харилцагч байгууллага</button>
+    <button class="btn" onclick="openCompany()">Байгууллагын мэдээлэл</button>
+    <button class="btn" onclick="openCodes()">Нэвтрэх код</button>
+    <button class="btn" onclick="openBackup()">Нөөцлөх</button>
+  </div>
+</div>
+
+<div class="screen" id="scrItems">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Бараа, үнэ</h2></div>
+  <div class="card">
+    <h3>Ангилал бүрийн нэгж ба үнэ</h3>
+    <div class="scroll-box" style="max-height:60vh" id="itemsEdit"></div>
+    <div class="add-row">
+      <input type="text" id="newItemName" placeholder="Шинэ барааны нэр">
+      <button onclick="addItem()">Нэмэх</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="scrFridgeItems">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөргүүрийн ангилал</h2></div>
+  <div class="seg" id="fiSeg">
+    <button class="on" onclick="setFiFridge(1,this)" id="fiBtn1">1-р хөргүүр</button>
+    <button onclick="setFiFridge(2,this)" id="fiBtn2">2-р хөргүүр</button>
+  </div>
+  <div class="card">
+    <h3>Энэ хөргүүрт хадгалах бараа</h3>
+    <div class="tool-row">
+      <button onclick="allFi(true)">Бүгдийг сонгох</button>
+      <button onclick="allFi(false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" style="max-height:58vh" id="fiList"></div>
+  </div>
+</div>
+
+<div class="screen" id="scrWorkers">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Ажилчид</h2></div>
+  <div class="card">
+    <h3>Ажилчдын жагсаалт</h3>
+    <div class="scroll-box" style="max-height:58vh" id="workersEdit"></div>
+    <div class="add-row">
+      <input type="text" id="newWorkerName" placeholder="Шинэ ажилчны нэр">
+      <button onclick="addWorker()">Нэмэх</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="scrRates">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Цалингийн тариф</h2></div>
+  <div class="card">
+    <p class="label">Ажилчин</p>
+    <div class="sel" id="sel_rate"></div>
+  </div>
+  <div class="card" id="rateCard" style="display:none">
+    <h3 id="rateWho"></h3>
+    <div class="scroll-box" id="ratesEdit"></div>
+  </div>
+</div>
+
+<div class="screen" id="scrPartners">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч байгууллага</h2></div>
+  <div class="card">
+    <h3>Байнга ажилладаг харилцагчид</h3>
+    <div class="scroll-box" style="max-height:40vh" id="partnersEdit"></div>
+    <div class="add-row" style="display:block">
+      <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px">
+      <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px">
+      <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
+      <button class="btn btn-in btn-sm" onclick="addPartner()">Нэмэх</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="scrCompany">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Байгууллагын мэдээлэл</h2></div>
+  <div class="card">
+    <h3>Баримтын толгойд хэвлэгдэнэ</h3>
+    <div class="stack">
+      <input type="text" id="coName" placeholder="Байгууллагын нэр">
+      <input type="text" id="coPhone" placeholder="Холбогдох утас">
+      <input type="text" id="coReg" placeholder="Регистрийн дугаар">
+    </div>
+  </div>
+  <div class="card">
+    <h3>Мөнгө хүлээн авах данс</h3>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Хувь хүнд бараа олгосон баримт дээр энэ данс хэвлэгдэнэ</p>
+    <div class="stack">
+      <input type="text" id="coBank" placeholder="Банкны нэр">
+      <input type="text" id="coAccount" placeholder="Дансны дугаар">
+      <input type="text" id="coAccName" placeholder="Данс эзэмшигчийн нэр">
+    </div>
+    <button class="btn btn-in btn-sm" onclick="saveCompany()">Хадгалах</button>
+  </div>
+</div>
+
+<div class="screen" id="scrCodes">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нэвтрэх код</h2></div>
+  <div class="card">
+    <h3>4 оронтой код</h3>
+    <div class="edit-row"><span class="nm">Ажилчны код</span>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center"></div>
+    <div class="edit-row"><span class="nm">Админы код</span>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
+    <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
+  </div>
+</div>
+
+<div class="screen" id="scrBackup">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нөөцлөх</h2></div>
+  <div class="card">
+    <h3>Бүх мэдээлэл</h3>
+    <textarea id="bkText" style="height:150px"></textarea>
+    <div class="row-2" style="margin-top:12px">
+      <button class="btn btn-in btn-sm" onclick="copyBackup()">Хуулах</button>
+      <button class="btn btn-sm" onclick="restoreBackup()">Сэргээх</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Аюултай үйлдэл</h3>
+    <button class="btn btn-out btn-sm" onclick="wipeAll()">Бүх бүртгэлийг устгах</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ================= FIREBASE ТОХИРГОО ================= -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
+    authDomain: "hurguuriin-burtgel.firebaseapp.com",
+    projectId: "hurguuriin-burtgel",
+    storageBucket: "hurguuriin-burtgel.firebasestorage.app",
+    messagingSenderId: "437875124772",
+    appId: "1:437875124772:web:8fe460bc5cfa3cada146b1"
+  };
+
+  if(firebaseConfig.projectId){
+    const V="https://www.gstatic.com/firebasejs/10.12.0/";
+    const [{initializeApp},{getAuth,signInAnonymously,onAuthStateChanged},FS] = await Promise.all([
+      import(V+"firebase-app.js"),
+      import(V+"firebase-auth.js"),
+      import(V+"firebase-firestore.js")
+    ]);
+    const app = initializeApp(firebaseConfig);
+    let fs;
+    try{
+      fs = FS.initializeFirestore(app,{localCache:FS.persistentLocalCache({tabManager:FS.persistentMultipleTabManager()})});
+    }catch(e){ fs = FS.getFirestore(app); }
+    window.FB = { fs, doc:FS.doc, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
+                  collection:FS.collection, onSnapshot:FS.onSnapshot, runTransaction:FS.runTransaction };
+    const auth = getAuth(app);
+    onAuthStateChanged(auth, u=>{ if(u && window.startSync) window.startSync(); });
+    signInAnonymously(auth).catch(e=>{
+      console.error("Firebase auth алдаа:",e);
+      window.setSyncState && window.setSyncState("err");
+    });
+  }
+</script>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
