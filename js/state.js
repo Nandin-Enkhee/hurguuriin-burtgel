@@ -20,7 +20,7 @@ export function defaults(){
       itemDefaults("Нохой хоол", "kg"),
       itemDefaults("Гэдэс",      "sack")
     ],
-    workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
+    workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0,hasAdvance:false,advance:0}],
     partners:[], receipts:[], purchases:[], log:[], audits:[], settlements:[]
   };
 }
@@ -65,6 +65,8 @@ export function normalize(){
   db.workers.forEach(w=>{
     if(!w.payType) w.payType="piece";
     if(w.salary==null) w.salary=0;
+    if(w.hasAdvance==null) w.hasAdvance=false;
+    if(w.advance==null) w.advance=0;
   });
   db.receipts.forEach(r=>{ if(r.paid==null) r.paid=false; });
   db.purchases.forEach(p=>{ if(p.paid==null) p.paid=false; });
