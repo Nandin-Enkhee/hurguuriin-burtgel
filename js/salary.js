@@ -51,26 +51,36 @@ export function renderSalary(){
     const fixed = w.payType==="fixed";
     /* Тогтмол цалин сараар тооцогддог тул өдрийн дүнд нэмэгдэхгүй */
     const counts = fixed ? S().period!=="day" : true;
-    const t = fixed ? (counts ? (+w.salary||0) : 0) : (totals[w.id]||0);
+    const earned = fixed ? (counts ? (+w.salary||0) : 0) : (totals[w.id]||0);
+    /* Урьдчилгаа сарын тооцоонд ордог тул өдрийн харагдацад хасагдахгүй */
+    const adv = (w.hasAdvance && S().period!=="day") ? (+w.advance||0) : 0;
+    const t = earned - adv;
     sum+=t;
     let shown = fixed && !counts ? `<span style="color:var(--muted)">сараар</span>` : money(t);
     if(!state.isAdmin && fixed) shown=`<span style="color:var(--muted)">тогтмол</span>`;
-    const tag = fixed ? ` <small>тогтмол</small>` : "";
+    const tags = [fixed?"тогтмол":"", adv?"урьдчилгаа "+money(adv):""].filter(Boolean).join(" · ");
+    const tag = tags ? ` <small>${tags}</small>` : "";
     const open = S().open===w.id;
     return `<div class="item-row" style="cursor:pointer" onclick="toggleSalDetail('${w.id}')">
         <span class="item-name">${esc(w.name)}${tag}</span>
         <span class="item-val">${shown}</span></div>`
-      + (open ? (fixed ? fixedDetail(w) : detailHTML(w.id)) : "");
+      + (open ? (fixed ? fixedDetail(w,earned,adv) : detailHTML(w.id,earned,adv)) : "");
   }).join("");
   $("salList").innerHTML = html + `<div class="total-line"><span>Нийт</span><b>${money(sum)}</b></div>`;
 }
-function fixedDetail(w){
+function advanceRows(earned,adv){
+  if(!adv) return "";
+  return `<div class="item-row"><span class="item-name">Урьдчилгаа</span>
+      <span class="item-val" style="color:var(--rust)">−${money(adv)}</span></div>
+    <div class="total-line"><span>Гарт олгох</span><b>${money(earned-adv)}</b></div>`;
+}
+function fixedDetail(w,earned,adv){
   return `<div class="sal-detail"><div class="item-row">
     <span class="item-name">Сарын тогтмол цалин</span>
-    <span class="item-val">${money(+w.salary||0)}</span></div></div>`;
+    <span class="item-val">${money(earned)}</span></div>${advanceRows(earned,adv)}</div>`;
 }
 /* Оруулалт бүрийг тусад нь, он сар цаг минуттай нь харуулна */
-function detailHTML(wid){
+function detailHTML(wid,earned,adv){
   const groups={};
   db.log.forEach(e=>{
     if(e.action!=="in" || e.worker!==wid || !inPeriod(e.ts)) return;
@@ -81,7 +91,7 @@ function detailHTML(wid){
     const pay=payFor(e); r.sum+=pay; g.sum+=pay;
   });
   const gks=Object.keys(groups).sort((a,b)=>groups[b].ts-groups[a].ts);
-  if(!gks.length) return `<div class="sal-detail"><div class="empty">Энэ хугацаанд бүртгэл алга</div></div>`;
+  if(!gks.length) return `<div class="sal-detail"><div class="empty">Энэ хугацаанд бүртгэл алга</div>${advanceRows(earned,adv)}</div>`;
   return `<div class="sal-detail">${gks.map(gk=>{
     const g=groups[gk];
     return `<div class="calc-w">
@@ -93,6 +103,6 @@ function detailHTML(wid){
           <span class="chain">${chain} ${uShort(u)} × ${money(rateOf(wid,iid))}</span></span>
           <span class="item-val">${money(r.sum)}</span></div>`;
       }).join("")}</div>`;
-  }).join("")}</div>`;
+  }).join("")}${advanceRows(earned,adv)}</div>`;
 }
 registerScreen("scrSalary", renderSalary);
