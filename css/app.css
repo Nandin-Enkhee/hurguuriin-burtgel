@@ -273,6 +273,29 @@ textarea{width:100%;padding:10px;font-size:13px;font-family:var(--mono);}
 .calc-row .cu{font-size:12px;font-weight:700;color:var(--muted);width:26px;text-transform:uppercase;}
 .sal-detail{background:#f2f5f9;border:1px solid var(--line-soft);border-radius:var(--r-md);padding:12px;margin:0 0 12px;}
 .sal-detail .item-row{border-bottom-color:#e2e8f0;}
+
+/* ---------- Цалингийн хүснэгт ---------- */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);}
+table.tbl{border-collapse:collapse;width:100%;min-width:430px;font-size:13px;}
+table.tbl th{
+  position:sticky;top:0;z-index:1;
+  background:var(--cream);color:var(--muted);
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  text-align:left;padding:9px 8px;border-bottom:1.5px solid var(--line);white-space:nowrap;
+}
+table.tbl td{padding:9px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink);}
+table.tbl tr:last-child td{border-bottom:none;}
+table.tbl .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+table.tbl .amt{text-align:right;white-space:nowrap;font-weight:700;color:var(--blue-ink);}
+table.tbl .dim{color:var(--muted);font-size:12px;}
+table.tbl .nm{font-weight:600;}
+table.tbl tr.day-head td{
+  background:#eaf0f7;color:var(--blue-ink);font-weight:700;font-size:12px;
+  letter-spacing:.02em;padding:8px;border-bottom:1px solid var(--line);
+}
+table.tbl tr.day-head td.amt{color:var(--blue-ink);}
+table.tbl tr.sum td{background:var(--cream);font-weight:700;border-top:1.5px solid var(--line);}
+.tbl-note{font-size:12px;color:var(--muted);margin:8px 2px 0;}
 .chain{font-size:13px;font-weight:600;color:var(--muted);word-break:break-word;display:block;margin-top:2px;}
 
 /* ---------- Хөдөлгөөн ---------- */
