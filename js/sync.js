@@ -3,16 +3,24 @@ import { db, saveLocal, normalize } from './state.js';
 import { refreshActive } from './router.js';
 
 let ready=false, syncState="local";
+const watchers=[];
+/* Холболтын төлөв өөрчлөгдөхөд дуудагдана */
+export function onSync(fn){ watchers.push(fn); }
+/* Сервертэй холбогдож, сүлжээ байгаа эсэх */
+export function isOnline(){ return ready && syncState==="ok" && navigator.onLine; }
 
 export function syncText(){
-  if(syncState==="err") return "Сүлжээний тохиргоо алдаатай · утсанд хадгалж байна";
-  if(syncState==="ok")  return navigator.onLine ? "Сервертэй холбогдсон" : "Офлайн · сүлжээ ирэхэд өөрөө нийлнэ";
+  if(syncState==="ok")         return navigator.onLine ? "Сервертэй холбогдсон" : "Офлайн · сүлжээ ирэхэд өөрөө нийлнэ";
+  if(syncState==="connecting") return "Сервертэй холбогдож байна…";
+  if(syncState==="domain")     return "Домэйн зөвшөөрөгдөөгүй · Firebase → Authorized domains";
+  if(syncState==="err")        return "Сервертэй холбогдож чадсангүй · утсанд хадгалж байна";
   return "Зөвхөн энэ утсанд хадгалж байна";
 }
 export function setSyncState(st){
   syncState=st;
   const el=document.getElementById("syncLine");
   if(el) el.textContent=syncText();
+  watchers.forEach(fn=>{ try{ fn(isOnline()); }catch(e){ console.error(e); } });
 }
 window.setSyncState=setSyncState;
 
@@ -64,7 +72,7 @@ export function startSync(){
     }, e=>console.error(e));
   });
 
-  ["log","receipts","purchases","audits","settlements"].forEach(coll=>{
+  ["log","receipts","purchases","audits","settlements","wagepays"].forEach(coll=>{
     F.onSnapshot(F.collection(F.fs,coll), snap=>{
       db[coll]=snap.docs.map(d=>d.data());
       normalize(); saveLocal(); refreshActive();
@@ -75,6 +83,9 @@ window.startSync=startSync;
 
 window.addEventListener("online", ()=>setSyncState(syncState));
 window.addEventListener("offline",()=>setSyncState(syncState));
+
+/* 12 секундын дотор холбогдоогүй бол чимээгүй хүлээхээ болино */
+setTimeout(()=>{ if(syncState==="connecting") setSyncState("err"); }, 12000);
 
 /* Баримтын дугаарыг transaction-оор нэмнэ — хоёр хүн зэрэг
    баримт гаргасан ч дугаар давхцахгүй. */
