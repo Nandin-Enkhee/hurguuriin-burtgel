@@ -20,8 +20,8 @@ export function defaults(){
       itemDefaults("Нохой хоол", "kg"),
       itemDefaults("Гэдэс",      "sack")
     ],
-    workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0,hasAdvance:false,advance:0}],
-    partners:[], receipts:[], purchases:[], log:[], audits:[], settlements:[]
+    workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
+    partners:[], receipts:[], purchases:[], log:[], audits:[], settlements:[], wagepays:[]
   };
 }
 function itemDefaults(name,track){
@@ -46,6 +46,7 @@ export function normalize(){
   db.audits     = db.audits     || [];
   db.log        = db.log        || [];
   db.settlements= db.settlements|| [];
+  db.wagepays   = db.wagepays   || [];
   db.items      = db.items      || [];
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
@@ -64,9 +65,13 @@ export function normalize(){
   });
   db.workers.forEach(w=>{
     if(!w.payType) w.payType="piece";
-    if(w.salary==null) w.salary=0;
-    if(w.hasAdvance==null) w.hasAdvance=false;
-    if(w.advance==null) w.advance=0;
+    if(w.salary==null) w.salary=0;   /* тогтмол цалин — нэг өдрийн дүн */
+    /* Хуучин ажилчин дээрх нэг удаагийн урьдчилгааг огноотой бичилт болгож шилжүүлнэ */
+    if(w.hasAdvance && +w.advance>0){
+      db.wagepays.push({id:uid(),ts:Date.now(),worker:w.id,kind:"advance",
+                        amount:+w.advance,note:"Хуучин тохиргооноос шилжсэн"});
+    }
+    delete w.hasAdvance; delete w.advance;
   });
   db.receipts.forEach(r=>{ if(r.paid==null) r.paid=false; });
   db.purchases.forEach(p=>{ if(p.paid==null) p.paid=false; });
@@ -93,9 +98,11 @@ export const state = {
   entry:{ items:{}, workers:[], split:{}, date:null },
   cart:{ partner:null, personName:"", personPhone:"", issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
   buy:{ date:null, fridge:1, supplier:null, supName:"", supPhone:"", items:{}, prices:{} },
-  salary:{ period:"day", open:null },
+  salary:{ period:"day", open:null, date:null, month:null },
+  records:{ month:null, fridge:1, openDay:null },
+  itemHist:{ item:null, month:null },
   dash:{ date:null, openOrg:null },
-  debt:{ kind:"due", month:null, search:"", show:"open", openOrg:null },
+  debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
   fiFridge:1,
   receipt:{ backTo:"scrFridge", current:null },
