@@ -5,7 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#152941">
 <title>Хөргүүрийн бүртгэл</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
 <link rel="stylesheet" href="css/app.css">
+<!-- ================= FIREBASE ТОХИРГОО ================= -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
+    authDomain: "hurguuriin-burtgel.firebaseapp.com",
+    projectId: "hurguuriin-burtgel",
+    storageBucket: "hurguuriin-burtgel.firebasestorage.app",
+    messagingSenderId: "437875124772",
+    appId: "1:437875124772:web:8fe460bc5cfa3cada146b1"
+  };
+
+  window.setSyncState && window.setSyncState("connecting");
+  if(firebaseConfig.projectId){
+    const V="https://www.gstatic.com/firebasejs/10.12.0/";
+    const [{initializeApp},{getAuth,signInAnonymously,onAuthStateChanged},FS] = await Promise.all([
+      import(V+"firebase-app.js"),
+      import(V+"firebase-auth.js"),
+      import(V+"firebase-firestore.js")
+    ]);
+    const app = initializeApp(firebaseConfig);
+    let fs;
+    try{
+      fs = FS.initializeFirestore(app,{localCache:FS.persistentLocalCache({tabManager:FS.persistentMultipleTabManager()})});
+    }catch(e){ fs = FS.getFirestore(app); }
+    window.FB = { fs, doc:FS.doc, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
+                  collection:FS.collection, onSnapshot:FS.onSnapshot, runTransaction:FS.runTransaction };
+    const auth = getAuth(app);
+    onAuthStateChanged(auth, u=>{ if(u && window.startSync) window.startSync(); });
+    signInAnonymously(auth).catch(e=>{
+      console.error("Firebase auth алдаа:",e);
+      window.setSyncState && window.setSyncState(
+        String(e && e.code).indexOf("unauthorized-domain")>=0 ? "domain" : "err");
+    });
+  }
+</script>
 </head>
 <body>
 
@@ -228,9 +270,14 @@
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Цалин</h2></div>
   <div class="sub" id="salNote" style="display:none">Өнөөдрийн бүртгэлээ шалгах</div>
   <div class="seg" id="salSeg">
-    <button class="on" onclick="setPeriod('day',this)">Өнөөдөр</button>
-    <button onclick="setPeriod('month',this)">Энэ сар</button>
+    <button class="on" onclick="setPeriod('day',this)">Өдрөөр</button>
+    <button onclick="setPeriod('month',this)">Сараар</button>
     <button onclick="setPeriod('all',this)">Бүгд</button>
+  </div>
+  <div class="card" id="salPickCard">
+    <h3 id="salPickTitle">Огноо</h3>
+    <input type="date"  class="date-in" id="salDate"  onchange="setSalDate(this.value)">
+    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)" style="display:none">
   </div>
   <div class="card"><div class="scroll-box" style="max-height:70vh" id="salList"></div></div>
 </div>
@@ -371,39 +418,7 @@
 
 <div id="toast"></div>
 
-<!-- ================= FIREBASE ТОХИРГОО ================= -->
-<script type="module">
-  const firebaseConfig = {
-    apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
-    authDomain: "hurguuriin-burtgel.firebaseapp.com",
-    projectId: "hurguuriin-burtgel",
-    storageBucket: "hurguuriin-burtgel.firebasestorage.app",
-    messagingSenderId: "437875124772",
-    appId: "1:437875124772:web:8fe460bc5cfa3cada146b1"
-  };
 
-  if(firebaseConfig.projectId){
-    const V="https://www.gstatic.com/firebasejs/10.12.0/";
-    const [{initializeApp},{getAuth,signInAnonymously,onAuthStateChanged},FS] = await Promise.all([
-      import(V+"firebase-app.js"),
-      import(V+"firebase-auth.js"),
-      import(V+"firebase-firestore.js")
-    ]);
-    const app = initializeApp(firebaseConfig);
-    let fs;
-    try{
-      fs = FS.initializeFirestore(app,{localCache:FS.persistentLocalCache({tabManager:FS.persistentMultipleTabManager()})});
-    }catch(e){ fs = FS.getFirestore(app); }
-    window.FB = { fs, doc:FS.doc, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
-                  collection:FS.collection, onSnapshot:FS.onSnapshot, runTransaction:FS.runTransaction };
-    const auth = getAuth(app);
-    onAuthStateChanged(auth, u=>{ if(u && window.startSync) window.startSync(); });
-    signInAnonymously(auth).catch(e=>{
-      console.error("Firebase auth алдаа:",e);
-      window.setSyncState && window.setSyncState("err");
-    });
-  }
-</script>
 
 <script type="module" src="js/main.js"></script>
 </body>
