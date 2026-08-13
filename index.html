@@ -63,7 +63,9 @@
       <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="4-р орон">
     </div>
     <div class="error-msg" id="errorMsg"></div>
-    <button class="btn btn-in" onclick="checkCode()">Нэвтрэх</button>
+    <button class="btn btn-in" id="loginBtn" onclick="checkCode()">Нэвтрэх</button>
+    <div class="hint" id="lockWarn" style="display:none;color:var(--rust)">
+      Сервертэй холбогдож байна…<br>Холбогдмогц нэвтрэх боломжтой болно</div>
     <div class="hint">Ажилчин 1234 · Админ 9999</div>
   </div>
 </div>
@@ -72,6 +74,10 @@
 <div class="screen" id="scrHome">
   <h1 class="page-title">Үндсэн цэс</h1>
   <div class="sub"><span id="homeDate"></span> · <span id="syncLine"></span></div>
+  <div class="card" id="homeLock" style="display:none;border-color:var(--rust)">
+    <div class="empty" style="color:var(--rust)">Сервертэй холбогдоогүй байна.<br>
+      Холбогдох хүртэл бүх үйлдэл түр хаалттай.</div>
+  </div>
   <div class="menu">
     <button class="btn btn-in" onclick="openDash()" id="btnDash">Хяналтын самбар</button>
     <button class="btn" onclick="openFridge(1)" id="btnF1">1-р хөргүүр</button>
@@ -96,6 +102,16 @@
   <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
   <div class="card"><h3>Ажилчдын цалин</h3><div id="dashPay"></div></div>
   <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
+</div>
+
+<!-- ============ БАРААНЫ ТҮҮХ ============ -->
+<div class="screen" id="scrItemHist">
+  <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
+  <div class="card">
+    <h3>Он, сар</h3>
+    <input type="month" class="date-in" id="ihMonth" onchange="setItemHistMonth(this.value)">
+  </div>
+  <div id="ihBody"></div>
 </div>
 
 <!-- ============ ХӨРГҮҮР ============ -->
@@ -232,8 +248,13 @@
   </div>
   <div class="card">
     <h3>Шүүлтүүр</h3>
-    <p class="label">Он, сар</p>
+    <div class="tool-row" style="margin-bottom:12px">
+      <button class="on" id="dbR1" onclick="setDebtRange('month')">Сараар</button>
+      <button id="dbR2" onclick="setDebtRange('day')">Өдрөөр</button>
+      <button id="dbR3" onclick="setDebtRange('all')">Бүгд</button>
+    </div>
     <input type="month" class="date-in" id="debtMonth" onchange="setDebtMonth(this.value)">
+    <input type="date" class="date-in" id="debtDate" onchange="setDebtDate(this.value)" style="display:none">
     <p class="label" style="margin-top:14px">Нэрээр хайх</p>
     <input type="text" class="search-in" id="debtSearch" placeholder="Байгууллага, хүний нэр" oninput="setDebtSearch(this.value)">
     <div class="tool-row" style="margin:12px 0 0">
@@ -248,11 +269,18 @@
 
 <!-- ============ БАРИМТ, ТҮҮХ ============ -->
 <div class="screen" id="scrRecords">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Баримт, түүх</h2></div>
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
+  <div class="seg" id="recSeg">
+    <button class="on" onclick="setRecFridge(1,this)" id="recBtn1">1-р хөргүүр</button>
+    <button onclick="setRecFridge(2,this)" id="recBtn2">2-р хөргүүр</button>
+  </div>
   <div class="card">
-    <h3>Сүүлийн 100 бүртгэл</h3>
-    <div class="tool-row"><button onclick="deleteSelectedLogs()">Сонгосныг устгах</button></div>
-    <div class="scroll-box" style="max-height:64vh" id="recList"></div>
+    <h3>Он, сар</h3>
+    <input type="month" class="date-in" id="recMonth" onchange="setRecMonth(this.value)">
+  </div>
+  <div class="card">
+    <h3>Өдөр бүрийн үлдэгдэл</h3>
+    <div id="recList"></div>
   </div>
 </div>
 
