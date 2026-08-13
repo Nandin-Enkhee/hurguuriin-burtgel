@@ -114,16 +114,24 @@ export function renderWorkers(){
   const ws=liveWorkers();
   $("workersEdit").innerHTML = ws.length ? ws.map(w=>{
     const fixed=w.payType==="fixed";
+    const adv=!!w.hasAdvance;
     return `<div class="item-cfg">
       <div class="edit-row" style="border:none;padding:0">
         <input type="text" value="${esc(w.name)}" onchange="setWorkerName('${w.id}',this.value)">
         <button class="icon-btn" onclick="delWorker('${w.id}')">Хасах</button>
       </div>
-      <button type="button" class="check-row${fixed?" on":""}" style="padding:8px 0" onclick="toggleWorkerFixed('${w.id}')">
-        <span class="tick">✓</span><span>Тогтмол цалинтай</span></button>
+      <div class="check-2">
+        <button type="button" class="check-row${fixed?" on":""}" onclick="toggleWorkerFixed('${w.id}')">
+          <span class="tick">✓</span><span>Тогтмол цалинтай</span></button>
+        <button type="button" class="check-row${adv?" on":""}" onclick="toggleWorkerAdvance('${w.id}')">
+          <span class="tick">✓</span><span>Урьдчилгаа</span></button>
+      </div>
       ${fixed?`<div class="cfg-row"><span class="cl">Сарын цалин</span>
         <input class="opt-sel" style="max-width:150px;text-align:right" type="number" inputmode="decimal"
                value="${w.salary||0}" onchange="setWorkerSalary('${w.id}',this.value)"></div>`:""}
+      ${adv?`<div class="cfg-row"><span class="cl">Урьдчилгааны дүн</span>
+        <input class="opt-sel" style="max-width:150px;text-align:right" type="number" inputmode="decimal"
+               value="${w.advance||0}" onchange="setWorkerAdvance('${w.id}',this.value)"></div>`:""}
     </div>`;
   }).join("") : `<div class="empty">Ажилчин нэмээгүй байна</div>`;
 }
@@ -134,11 +142,18 @@ export function toggleWorkerFixed(id){
   save(); renderWorkers();
 }
 export function setWorkerSalary(id,v){ const w=db.workers.find(x=>x.id===id); if(w){ w.salary=f(v); save(); } }
+export function toggleWorkerAdvance(id){
+  const w=db.workers.find(x=>x.id===id); if(!w) return;
+  w.hasAdvance=!w.hasAdvance;
+  if(!w.hasAdvance) w.advance=0;
+  save(); renderWorkers();
+}
+export function setWorkerAdvance(id,v){ const w=db.workers.find(x=>x.id===id); if(w){ w.advance=f(v); save(); } }
 export function addWorker(){
   const n=$("newWorkerName").value.trim();
   if(!n){ toast("Ажилчны нэрийг бичнэ үү"); return; }
   const rates={}; db.items.forEach(i=>rates[i.id]=+i.defRate||0);
-  db.workers.push({id:uid(),name:n,rates,payType:"piece",salary:0});
+  db.workers.push({id:uid(),name:n,rates,payType:"piece",salary:0,hasAdvance:false,advance:0});
   $("newWorkerName").value=""; save(); renderWorkers(); toast(n+" нэмэгдлээ");
 }
 export function delWorker(id){
