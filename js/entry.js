@@ -1,12 +1,14 @@
-/* Оруулах: бараагаа бүртгээд, ажилчид дээр цалинг нь автоматаар хуваарилна */
+/* Оруулах — зөвхөн хөргүүрийн үлдэгдэлд нөлөөлнө.
+   Цалин энд бодогдохгүй; хэн хянаж оруулсныг л тэмдэглэнэ. */
 import { db, state, uid, saveLocal } from './state.js';
-import { esc, f, int, num, isoStr, tsOfIso, itemName, workerName, liveWorkers,
-         hasKg, hasPcs, payUnitOf, uShort, rateOf, fridgeName, money } from './util.js';
-import { $, toast, multiSelectHTML, onMultiChoose } from './ui.js';
+import { esc, f, int, num, isoStr, tsOfIso, itemName, hasKg, hasPcs,
+         fridgeName, liveWorkers, qtyLine } from './util.js';
+import { $, toast, selectHTML, onChoose } from './ui.js';
 import { show } from './router.js';
-import { registerPicker, renderPicker, blankQty } from './picker.js';
-import { fbSet } from './sync.js';
+import { registerPicker, renderPicker } from './picker.js';
+import { fbSet, save } from './sync.js';
 import { openFridge } from './fridge.js';
+import { requireOnline } from './auth.js';
 
 const E = () => state.entry;
 
@@ -15,133 +17,66 @@ registerPicker("entry",{
   sel: () => E().items,
   fridge: () => state.curFridge,
   lineHTML: id => sackLine(id),
-  onChange: () => { recalcSplit(); renderCalc(); }
+  onChange: () => renderEntrySummary()
 });
 function sackLine(id){
   const v=E().items[id]||{};
-  const t=int(v.per)*int(v.sacks);
   if(!v.per && !v.sacks) return "";
+  const t=int(v.per)*int(v.sacks);
   return t>0 ? "= "+t+" ширхэг" : "Шуудайн тоогоо бичнэ үү";
 }
 
 export function openEntry(){
-  state.entry={ items:{}, workers:[], split:{}, date:isoStr() };
+  if(!requireOnline()) return;
+  const known = db.lastRecorder && liveWorkers().some(w=>w.id===db.lastRecorder) ? db.lastRecorder : null;
+  state.entry={ items:{}, recorder:known, date:isoStr() };
   $("enTitle").textContent="Оруулах · "+fridgeName(state.curFridge);
   const d=$("enDate"); d.value=E().date; d.max=isoStr();
-  renderPicker("entry"); renderEntryWorkers(); renderCalc();
-  show("scrEntry");
+  renderEntry(); show("scrEntry");
 }
 export function setEntryDate(v){ E().date = v || isoStr(); }
 
-onMultiChoose.entryWorker = id => toggleEntryWorker(id);
+onChoose.recorder = id => { E().recorder=id; db.lastRecorder=id; save(); renderEntry(); };
 
-export function renderEntryWorkers(){
-  const ws=liveWorkers();
-  const opts=ws.map(w=>({id:w.id, name:w.name + (w.payType==="fixed" ? " · тогтмол цалинтай" : "")}));
-  $("sel_entryWorker").innerHTML = multiSelectHTML("entryWorker", opts, E().workers,
-    "Ажилчнаа сонгоно уу",
-    "Ажилчин бүртгээгүй байна.<br>Тохиргоо → Ажилчид хэсгээс нэмнэ үү.");
+export function renderEntry(){
+  $("sel_recorder").innerHTML=selectHTML("recorder",liveWorkers(),E().recorder,"Хянасан хүнээ сонгоно уу");
+  renderPicker("entry");
+  renderEntrySummary();
 }
-export function toggleEntryWorker(id){
-  const ws=E().workers, i=ws.indexOf(id);
-  if(i>=0) ws.splice(i,1); else ws.push(id);
-  renderEntryWorkers(); recalcSplit(); renderCalc();
-}
-export function allEntryWorkers(on){
-  state.entry.workers = on ? liveWorkers().map(w=>w.id) : [];
-  renderEntryWorkers(); recalcSplit(); renderCalc();
-}
-
-/* Нийт хэмжээг ажилчдын тоонд тэнцүү хуваана. Үлдэгдэл нь эхний хүнд очно. */
-export function recalcSplit(){
-  const e=E();
-  e.split={};
-  const n=e.workers.length;
-  if(!n) return;
-  e.workers.forEach(w=>e.split[w]={});
-  Object.keys(e.items).forEach(iid=>{
-    const q=e.items[iid];
-    const tKg=f(q.kg), tPcs=int(q.pcs);
-    const eachKg=num(tKg/n), baseP=Math.floor(tPcs/n), rem=tPcs-baseP*n;
-    e.workers.forEach((w,idx)=>{
-      e.split[w][iid]={
-        kg: idx===0 ? num(tKg-eachKg*(n-1)) : eachKg,
-        pcs: baseP + (idx<rem?1:0)
-      };
-    });
-  });
-}
-function cell(w,iid){
-  const e=E();
-  e.split[w]=e.split[w]||{};
-  e.split[w][iid]=e.split[w][iid]||{kg:0,pcs:0};
-  return e.split[w][iid];
-}
-function workerSum(w){
-  const row=E().split[w]||{};
-  return Object.keys(row).reduce((s,iid)=>s+f(row[iid][payUnitOf(iid)])*rateOf(w,iid),0);
-}
-
-export function renderCalc(){
-  const e=E(), box=$("entryCalc");
-  const iids=Object.keys(e.items);
-  if(!e.workers.length || !iids.length){
-    box.innerHTML=`<div class="empty">Бараа болон ажилчнаа сонгоход тооцоо энд гарна</div>`;
-    return;
-  }
-  let grand=0;
-  let h=e.workers.map(w=>{
-    const wk=db.workers.find(x=>x.id===w)||{};
-    const s=workerSum(w); grand+=s;
-    const head = wk.payType==="fixed" ? "тогтмол" : money(s);
-    return `<div class="calc-w">
-      <div class="calc-head"><span>${esc(workerName(w))}</span><b id="ws_${w}">${head}</b></div>
-      ${iids.map(iid=>{
-        const u=payUnitOf(iid);
-        return `<div class="calc-row"><span class="cn">${esc(itemName(iid))}</span>
-          <input type="number" inputmode="${u==="pcs"?"numeric":"decimal"}" min="0" step="${u==="pcs"?"1":"0.01"}"
-                 value="${cell(w,iid)[u]}" oninput="setManual('${w}','${iid}',this.value)">
-          <span class="cu">${uShort(u)}</span></div>`;
-      }).join("")}
-    </div>`;
-  }).join("");
-  h+=`<div class="total-line"><span>Нийт цалин</span><b id="calcTotal">${money(grand)}</b></div>`;
-  box.innerHTML=h;
-}
-export function setManual(w,iid,v){
-  const u=payUnitOf(iid);
-  cell(w,iid)[u] = u==="pcs" ? int(v) : f(v);
-  let grand=0;
-  E().workers.forEach(x=>{
-    const wk=db.workers.find(y=>y.id===x)||{};
-    const s=workerSum(x); grand+=s;
-    const el=$("ws_"+x);
-    if(el) el.textContent = wk.payType==="fixed" ? "тогтмол" : money(s);
-  });
-  const t=$("calcTotal"); if(t) t.textContent=money(grand);
+export function renderEntrySummary(){
+  const ids=Object.keys(E().items).filter(id=>f(E().items[id].kg)>0||int(E().items[id].pcs)>0);
+  $("entrySummary").innerHTML = ids.length
+    ? `<div class="tbl-wrap"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Бараа</th><th class="num">Хэмжээ</th></tr></thead>
+        <tbody>${ids.map(id=>{
+          const v=E().items[id];
+          return `<tr><td class="nm">${esc(itemName(id))}</td>
+            <td class="amt">${qtyLine(f(v.kg),int(v.pcs),id)}</td></tr>`;
+        }).join("")}</tbody></table></div>`
+    : `<div class="empty">Бараагаа сонгоод хэмжээг нь бичнэ үү</div>`;
 }
 
 export function saveEntry(){
   if(state.busy.entry) return;
+  if(!requireOnline()) return;
   const e=E();
-  const iids=Object.keys(e.items).filter(id=>f(e.items[id].kg)>0||int(e.items[id].pcs)>0);
-  if(!iids.length){ toast("Бараа болон хэмжээг нь оруулна уу"); return; }
-  if(!e.workers.length){ toast("Ажилчнаа сонгоно уу"); return; }
+  const ids=Object.keys(e.items).filter(id=>f(e.items[id].kg)>0||int(e.items[id].pcs)>0);
+  if(!ids.length){ toast("Бараа болон хэмжээг нь оруулна уу"); return; }
+  if(!e.recorder){ toast("Хянаж оруулсан хүнээ сонгоно уу"); return; }
 
   state.busy.entry=true;
   const btn=$("entrySave"); if(btn) btn.disabled=true;
   try{
     const ts=tsOfIso(e.date), fresh=[];
-    iids.forEach(iid=>{
-      e.workers.forEach(w=>{
-        const c=cell(w,iid);
-        const kg  = hasKg(iid)  ? num(f(c.kg)) : 0;
-        const pcs = hasPcs(iid) ? int(c.pcs)   : 0;
-        if(kg<=0 && pcs<=0) return;
-        const rec={id:uid(),ts,fridge:state.curFridge,item:iid,worker:w,
-                   action:"in",kg,pcs,receipt:null,purchase:null};
-        db.log.push(rec); fresh.push(rec);
-      });
+    ids.forEach(id=>{
+      const v=e.items[id];
+      const kg  = hasKg(id)  ? num(f(v.kg)) : 0;
+      const pcs = hasPcs(id) ? int(v.pcs)   : 0;
+      if(kg<=0 && pcs<=0) return;
+      const rec={id:uid(),ts,fridge:state.curFridge,item:id,
+                 worker:null, by:e.recorder,          /* by = хянаж оруулсан хүн */
+                 action:"in",kg,pcs,receipt:null,purchase:null};
+      db.log.push(rec); fresh.push(rec);
     });
     saveLocal();
     fresh.forEach(r=>fbSet("log",r.id,r));
