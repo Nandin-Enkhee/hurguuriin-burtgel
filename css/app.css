@@ -89,7 +89,7 @@ body{
   text-transform:uppercase;letter-spacing:.09em;
   padding-bottom:10px;border-bottom:1px solid var(--line);
 }
-.scroll-box{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.scroll-box{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
 /* ---------- Нэвтрэх ---------- */
 #scrLogin{align-items:center;justify-content:center;padding:20px;}
