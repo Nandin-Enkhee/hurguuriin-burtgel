@@ -179,14 +179,29 @@ export function setRate(wid,iid,v){
   w.rates=w.rates||{}; w.rates[iid]=f(v); save();
 }
 
-/* ---------- Харилцагч ---------- */
+/* ---------- Харилцагч ----------
+   Байгууллага, хувь хүн хоёр тусдаа жагсаалттай. Гаргах, Худалдан авах
+   дэлгэц дээр шинээр бичсэн хувь хүн эндээ өөрөө нэмэгдэж, эндээсээ
+   устгагдана. Устгасан ч хуучин баримт хэвээр үлдэнэ. */
 export function openPartners(){ renderPartners(); show("scrPartners"); }
 export function renderPartners(){
+  db.persons = db.persons || [];
   $("partnersEdit").innerHTML = db.partners.length ? db.partners.map(p=>`
     <div class="edit-row"><span class="nm">${esc(p.name)}
       ${(p.reg||p.phone)?`<small>${esc([p.reg,p.phone].filter(Boolean).join(" · "))}</small>`:""}</span>
       <button class="icon-btn" onclick="delPartner('${p.id}')">Хасах</button></div>`).join("")
-    : `<div class="empty">Харилцагч нэмээгүй байна</div>`;
+    : `<div class="empty">Байгууллага нэмээгүй байна</div>`;
+  renderPersons();
+}
+export function renderPersons(){
+  const box=$("personsEdit");
+  if(!box) return;
+  const list=db.persons||[];
+  box.innerHTML = list.length ? list.map(p=>`
+    <div class="edit-row"><span class="nm">${esc(p.name)}
+      ${p.phone?`<small>${esc(p.phone)}</small>`:""}</span>
+      <button class="icon-btn" onclick="delPerson('${p.id}')">Хасах</button></div>`).join("")
+    : `<div class="empty">Хувь хүн нэмээгүй байна.<br>Гаргах дээр бичсэн хүн энд өөрөө нэмэгдэнэ.</div>`;
 }
 export function addPartner(){
   const n=$("npName").value.trim();
@@ -200,6 +215,28 @@ export function delPartner(id){
   if(!p || !confirm(p.name+" -г хасах уу?")) return;
   db.partners=db.partners.filter(x=>x.id!==id);
   save(); renderPartners(); toast("Хаслаа");
+}
+export function addPerson(){
+  const n=$("npPersonName").value.trim();
+  if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
+  db.persons=db.persons||[];
+  const same=db.persons.find(x=>x.name.toLowerCase()===n.toLowerCase());
+  if(same){ toast(n+" аль хэдийн бүртгэлтэй байна"); return; }
+  db.persons.push({id:uid(),name:n,phone:$("npPersonPhone").value.trim()});
+  $("npPersonName").value=""; $("npPersonPhone").value="";
+  save(); renderPersons(); toast(n+" нэмэгдлээ");
+}
+export function delPerson(id){
+  const p=(db.persons||[]).find(x=>x.id===id);
+  if(!p) return;
+  const used = db.receipts.some(r=>r.buyer && r.buyer.pid===id)
+            || db.purchases.some(x=>x.supplier && x.supplier.pid===id);
+  const msg = used
+    ? p.name+" -г жагсаалтаас хасах уу?\nӨмнө нь гарсан баримт, өглөг авлага хэвээр үлдэнэ."
+    : p.name+" -г хасах уу?";
+  if(!confirm(msg)) return;
+  db.persons=db.persons.filter(x=>x.id!==id);
+  save(); renderPersons(); toast("Хаслаа");
 }
 
 /* ---------- Байгууллагын мэдээлэл ---------- */
