@@ -6,7 +6,9 @@ import { $ } from './ui.js';
 
 const pickers = {};
 
-/* cfg: { boxId, sel(), fridge(), showStock, ignoreRc(), lineHTML(id), afterFields(id), onChange() } */
+/* cfg: { boxId, sel(), fridge(), items(), showStock, ignoreRc(),
+          lineHTML(id), afterFields(id), onAdd(id), onChange() }
+   items() өгвөл хөргүүрээс үл хамааран тэр жагсаалтыг ашиглана. */
 export function registerPicker(ns,cfg){ pickers[ns]=cfg; }
 
 export function blankQty(id){
@@ -43,7 +45,7 @@ export function renderPicker(ns){
   const box=$(cfg.boxId);
   if(!box) return;
   const sel=cfg.sel();
-  const items=itemsOf(cfg.fridge());
+  const items = cfg.items ? cfg.items() : itemsOf(cfg.fridge());
 
   if(!items.length){
     box.innerHTML = `<div class="empty">Энэ хөргүүрт ангилал тохируулаагүй байна.<br>Тохиргоо → Хөргүүрийн ангилал хэсгээс нэмнэ үү.</div>`;
@@ -87,7 +89,8 @@ export function pickToggle(ns,id){
 export function pickAll(ns,on){
   const cfg=pickers[ns], sel=cfg.sel();
   Object.keys(sel).forEach(k=>delete sel[k]);
-  if(on) itemsOf(cfg.fridge()).forEach(it=>{
+  const all = cfg.items ? cfg.items() : itemsOf(cfg.fridge());
+  if(on) all.forEach(it=>{
     sel[it.id]=blankQty(it.id);
     if(cfg.onAdd) cfg.onAdd(it.id);
   });
