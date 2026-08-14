@@ -52,13 +52,33 @@ document.addEventListener("click", e=>{
 /* Таблет дээр input дээр дарахад дэлгэцийн гар гарч ирээд, өөр газар
    дарахтал арилдаггүй тул зөвхөн "Болсон" товчоор л хаах боломж өгнө. */
 const KB_TAGS=["INPUT","TEXTAREA","SELECT"];
+
+/* Android-ийн зарим гар дээр (санал, clipboard гэх мэт) нэмэлт мөр
+   гардаг тул товчийг тогтмол доод хэмжээгээр биш, харин visualViewport-
+   оор бодож үргэлж харагдаж буй гарны яг дээр байрлуулна. */
+function positionKbDone(){
+  const b=$("kbDone"); if(!b) return;
+  const vv=window.visualViewport;
+  if(!vv){ b.style.bottom=""; return; }
+  const gap=Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  b.style.bottom = (gap>4 ? gap+10 : "") + (gap>4 ? "px" : "");
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", positionKbDone);
+  window.visualViewport.addEventListener("scroll", positionKbDone);
+}
+
 document.addEventListener("focusin", e=>{
   if(KB_TAGS.indexOf(e.target.tagName)>=0){
     const b=$("kbDone"); if(b) b.classList.add("show");
+    positionKbDone();
+    /* Гарны нээгдэх анимэйшн дуустал хэдэн удаа дахин тохируулна */
+    setTimeout(positionKbDone,150);
+    setTimeout(positionKbDone,350);
   }
 });
 document.addEventListener("focusout", ()=>{
-  /* Талбар хооронд шилжихэд түр salalgada — хамгийн сүүлд идэвхтэй
+  /* Талбар хооронд шилжихэд түр saatal — хамгийн сүүлд идэвхтэй
      элементийг шалгаад, input биш л бол товчийг нуана. */
   setTimeout(()=>{
     const a=document.activeElement, b=$("kbDone");
