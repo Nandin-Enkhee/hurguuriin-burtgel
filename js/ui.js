@@ -75,41 +75,28 @@ document.addEventListener("click", e=>{
   if(window.__openSel && e.target.closest && !e.target.closest(".sel")) closeAllSel();
 });
 
-/* Таблет дээр input дээр дарахад дэлгэцийн гар гарч ирээд, өөр газар
-   дарахтал арилдаггүй тул зөвхөн "Болсон" товчоор л хаах боломж өгнө. */
+/* Таблет дээр дэлгэцийн гар өөрөө хураагддаггүй тул гар дээрх Enter /
+   Done товчоор талбараас гарч, гарыг хаана. */
 const KB_TAGS=["INPUT","TEXTAREA","SELECT"];
 
-/* Android-ийн зарим гар дээр (санал, clipboard гэх мэт) нэмэлт мөр
-   гардаг тул товчийг тогтмол доод хэмжээгээр биш, харин visualViewport-
-   оор бодож үргэлж харагдаж буй гарны яг дээр байрлуулна. */
-function positionKbDone(){
-  const b=$("kbDone"); if(!b) return;
-  const vv=window.visualViewport;
-  if(!vv){ b.style.bottom=""; return; }
-  const gap=Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-  b.style.bottom = (gap>4 ? gap+10 : "") + (gap>4 ? "px" : "");
-}
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize", positionKbDone);
-  window.visualViewport.addEventListener("scroll", positionKbDone);
+export function closeKeyboard(){
+  const a=document.activeElement;
+  if(!a || KB_TAGS.indexOf(a.tagName)<0) return;
+  /* Android-ийн зарим гар зөвхөн blur()-ээр хураагддаггүй — түр
+     readonly болгож өгвөл найдвартай хаагдана. */
+  const ro=a.hasAttribute("readonly");
+  if(!ro) a.setAttribute("readonly","readonly");
+  a.blur();
+  if(!ro) setTimeout(()=>a.removeAttribute("readonly"),150);
 }
 
-document.addEventListener("focusin", e=>{
-  if(KB_TAGS.indexOf(e.target.tagName)>=0){
-    const b=$("kbDone"); if(b) b.classList.add("show");
-    positionKbDone();
-    /* Гарны нээгдэх анимэйшн дуустал хэдэн удаа дахин тохируулна */
-    setTimeout(positionKbDone,150);
-    setTimeout(positionKbDone,350);
-  }
-});
-document.addEventListener("focusout", ()=>{
-  /* Талбар хооронд шилжихэд түр saatal — хамгийн сүүлд идэвхтэй
-     элементийг шалгаад, input биш л бол товчийг нуана. */
-  setTimeout(()=>{
-    const a=document.activeElement, b=$("kbDone");
-    if(b && (!a || KB_TAGS.indexOf(a.tagName)<0)) b.classList.remove("show");
-  },80);
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Enter") return;
+  const a=e.target;
+  if(KB_TAGS.indexOf(a.tagName)<0 || a.tagName==="TEXTAREA") return;
+  if(a.closest && a.closest(".code-inputs")) return;   /* нэвтрэх код өөрөө боловсруулна */
+  e.preventDefault();
+  closeKeyboard();
 });
 
 /* Хүлээн авагч/нийлүүлэгч сонголт — эхлээд "Хувь хүн" эсвэл "Байгууллага"
