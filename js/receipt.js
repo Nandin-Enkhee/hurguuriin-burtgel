@@ -33,8 +33,8 @@ function receiptHTML(rc, copyLabel, cls){
   h+=`<div class="ln"></div>`;
   h+=`<div class="big">Нийт дүн: ${money(rc.total)}</div>`;
 
-  /* Хувь хүн мөнгөө шилжүүлэх боломжтой байх ёстой */
-  if(rc.buyer.type==="person" && c.account){
+  /* Хувь хүн болон байгууллага хоёулаа мөнгөө шилжүүлэх боломжтой байх ёстой */
+  if(c.account){
     h+=`<div class="bank"><div><b>Мөнгө шилжүүлэх данс</b></div>`;
     if(c.bank)        h+=`<div>${esc(c.bank)}</div>`;
     h+=`<div>${esc(c.account)}</div>`;
