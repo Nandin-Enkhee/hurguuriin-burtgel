@@ -3,7 +3,7 @@ import { db, state, uid, saveLocal } from './state.js';
 import { esc, f, int, num, itemName, itemPrice, money, mainUnitOf, uShort,
          isSack, sackNote, trackOf, stock, lQty, lUnit, lineSummary,
          fridgeName, perSackOf } from './util.js';
-import { $, toast, selectHTML, partyOptions, partyPlaceholder, onChoose } from './ui.js';
+import { $, toast, selectHTML, orgOptions, onChoose } from './ui.js';
 import { show } from './router.js';
 import { registerPicker, renderPicker, qtyOf } from './picker.js';
 import { fbSet, fbDel, save, pushSettings, nextNo } from './sync.js';
@@ -25,7 +25,7 @@ registerPicker("out",{
 
 export function openOut(){
   const known = db.lastIssuer && db.workers.some(w=>w.id===db.lastIssuer && !w.hidden) ? db.lastIssuer : null;
-  state.cart={ partner:null, partnerKind:null, issuer:known,
+  state.cart={ partner:null, personName:"", personPhone:"", issuer:known,
                items:{}, pcs:{}, per:{}, sacks:{}, editId:null };
   $("personName").value=""; $("personPhone").value="";
   renderOut(); show("scrOut");
@@ -34,16 +34,12 @@ export function editCurrentReceipt(){
   const rc=db.receipts.find(x=>x.id===state.receipt.current);
   if(!rc){ show("scrHome"); return; }
   state.curFridge=rc.fridge;
-  state.cart={ partner:null, partnerKind:null, issuer:rc.issuer,
+  state.cart={ partner:null, personName:"", personPhone:"", issuer:rc.issuer,
                items:{}, pcs:{}, per:{}, sacks:{}, editId:rc.id };
   const c=C();
   if(rc.buyer.type==="person"){
-    c.partnerKind="person";
-    let p=db.persons.find(x=>x.id===rc.buyer.pid) || db.persons.find(x=>x.name===rc.buyer.name);
-    if(!p){ p={id:uid(),name:rc.buyer.name,phone:rc.buyer.phone||""}; db.persons.push(p); save(); }
-    c.partner=p.id;
+    c.partner="__person"; c.personName=rc.buyer.name; c.personPhone=rc.buyer.phone||"";
   }else{
-    c.partnerKind="org";
     const p=db.partners.find(x=>x.id===rc.buyer.pid) || db.partners.find(x=>x.name===rc.buyer.name);
     if(p) c.partner=p.id;
     else{
@@ -58,7 +54,7 @@ export function editCurrentReceipt(){
     if(isSack(l.item)){ v.per=String(l.perSack||perSackOf(l.item)||""); v.sacks=String(l.sacks||""); }
     c.items[l.item]=v;
   });
-  $("personName").value=""; $("personPhone").value="";
+  $("personName").value=c.personName; $("personPhone").value=c.personPhone;
   renderOut(); show("scrOut");
 }
 export function leaveOut(){
@@ -70,13 +66,8 @@ export function leaveOut(){
   openFridge(state.curFridge);
 }
 onChoose.partner = id => {
-  const c=C();
-  if(id==="__kind_person"){ c.partnerKind="person"; c.partner=null; renderOut(); return; }
-  if(id==="__kind_org")   { c.partnerKind="org";    c.partner=null; renderOut(); return; }
-  if(id==="__back")       { c.partnerKind=null;     c.partner=null; renderOut(); return; }
-  c.partner=id; renderOut();
-  if(id==="__addorg")    setTimeout(()=>$("noName").focus(),50);
-  if(id==="__addperson") setTimeout(()=>$("personName").focus(),50);
+  C().partner=id; renderOut();
+  if(id==="__addorg") setTimeout(()=>$("noName").focus(),50);
 };
 onChoose.issuer = id => { C().issuer=id; db.lastIssuer=id; save(); renderOut(); };
 
@@ -89,15 +80,6 @@ export function addOrgInline(){
   C().partner=p.id; renderOut();
   toast(n+" нэмэгдэж сонгогдлоо");
 }
-export function addPersonInline(){
-  const n=$("personName").value.trim();
-  if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
-  const p={id:uid(),name:n,phone:$("personPhone").value.trim()};
-  db.persons.push(p); save();
-  $("personName").value=""; $("personPhone").value="";
-  C().partner=p.id; C().partnerKind="person"; renderOut();
-  toast(n+" нэмэгдэж сонгогдлоо");
-}
 export function renderOut(){
   const c=C();
   if(c.editId){
@@ -108,9 +90,9 @@ export function renderOut(){
     $("outTitle").textContent="Гаргах · "+fridgeName(state.curFridge);
     $("outSave").textContent="Баримт гаргах";
   }
-  $("sel_partner").innerHTML=selectHTML("partner",partyOptions(c.partnerKind,db.partners,db.persons),c.partner,partyPlaceholder(c.partnerKind));
+  $("sel_partner").innerHTML=selectHTML("partner",orgOptions(db.partners),c.partner,"Байгууллага эсвэл хувь хүн");
   $("sel_issuer").innerHTML =selectHTML("issuer",db.workers.filter(w=>!w.hidden),c.issuer,"Ажилтнаа сонгоно уу");
-  $("personBox").style.display = c.partner==="__addperson" ? "block" : "none";
+  $("personBox").style.display = c.partner==="__person" ? "block" : "none";
   $("newOrgBox").style.display = c.partner==="__addorg" ? "block" : "none";
   renderPicker("out"); renderOutTotal();
 }
@@ -131,7 +113,8 @@ export async function makeReceipt(){
   const c=C();
   const ids=Object.keys(c.items).filter(id=>outQty(id)>0);
   if(!ids.length){ toast("Бараа болон хэмжээг нь оруулна уу"); return; }
-  if(!c.partner || c.partner==="__addorg" || c.partner==="__addperson"){ toast("Хүлээн авагчаа сонгоно уу"); return; }
+  if(!c.partner || c.partner==="__addorg"){ toast("Хүлээн авагчаа сонгоно уу"); return; }
+  if(c.partner==="__person" && !c.personName.trim()){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
   if(!c.issuer){ toast("Олгосон ажилтнаа сонгоно уу"); return; }
   for(const id of ids){
     const s=stock(state.curFridge,id,c.editId);
@@ -144,9 +127,18 @@ export async function makeReceipt(){
   const btn=$("outSave"); const label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="Хадгалж байна…"; }
   try{
-    const buyer = c.partnerKind==="person"
-      ? (p=>({name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id}))(db.persons.find(x=>x.id===c.partner)||{name:"—",phone:""})
-      : (p=>({name:p.name,reg:p.reg||"",phone:p.phone||"",type:"org",pid:p.id}))(db.partners.find(x=>x.id===c.partner));
+    /* Хувь хүнийг нэг удаа бичихэд харилцагчид бүртгэгдэж, дараа нь
+       жагсаалтаас сонгогдоно. Тохиргооноос устгаж болно. */
+    let buyer;
+    if(c.partner==="__person"){
+      const nm=c.personName.trim();
+      let p=db.partners.find(x=>x.kind==="person" && x.name===nm);
+      if(!p){ p={id:uid(),name:nm,reg:"",phone:c.personPhone.trim(),kind:"person"}; db.partners.push(p); save(); }
+      buyer={name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id};
+    }else{
+      const p=db.partners.find(x=>x.id===c.partner);
+      buyer={name:p.name,reg:p.reg||"",phone:p.phone||"",type:p.kind==="person"?"person":"org",pid:p.id};
+    }
 
     const total=outTotal();
     const lines=ids.map(id=>{
@@ -194,3 +186,7 @@ export async function makeReceipt(){
     const x=$("outSave"); if(x){ x.disabled=false; x.textContent=label; }
   }
 }
+
+/* Хувь хүнд олгох үеийн нэр, утас */
+export function outPersonName(v){ C().personName=v; }
+export function outPersonPhone(v){ C().personPhone=v; }
