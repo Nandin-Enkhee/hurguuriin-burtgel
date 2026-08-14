@@ -387,19 +387,3 @@ table.tbl tr.sum td:first-child,table.tbl tr.day-head td:first-child{background:
   .receipt{box-shadow:none;max-width:100%;margin:0 0 10px;padding:0;border-radius:0;}
   .receipt.copy2{page-break-before:always;}
 }
-
-/* ---------- Гарыг хаах товч ----------
-   Таблет дээр дэлгэцийн гар өөрөө хураагддаггүй тул талбарт бичиж
-   эхлэхэд гарны яг дээр гарч ирнэ. Байрлалыг ui.js визуал viewport-оор
-   тааруулна — доорх утга нь тааруулах боломжгүй үеийн нөөц байрлал. */
-#kbDone{
-  position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 12px);
-  display:none;padding:13px 26px;border-radius:999px;
-  background:var(--blue);color:#fff;border:1px solid var(--blue-dark);
-  font:inherit;font-size:16px;font-weight:700;
-  box-shadow:var(--shadow-lift);z-index:120;cursor:pointer;
-  touch-action:manipulation;
-}
-#kbDone.show{display:block;}
-#kbDone:active{background:var(--blue-dark);transform:translateY(1px);}
-@media print{ #kbDone{display:none!important;} }
