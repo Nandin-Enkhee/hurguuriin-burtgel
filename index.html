@@ -91,10 +91,10 @@
 
 <!-- ============ ХЯНАЛТЫН САМБАР ============ -->
 <div class="screen" id="scrDash">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Хяналтын самбар</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Хяналтын самбар</h2></div>
   <div class="card">
     <h3>Огноо</h3>
-    <input type="date" class="date-in" id="dashDate" onchange="setDashDate(this.value)">
+    <input type="date" class="date-in" id="dashDate" onchange="setDashDate(this.value)" enterkeyhint="done">
   </div>
   <div class="card"><h3>Одоогийн үлдэгдэл</h3><div class="scroll-box" id="dashStock"></div></div>
   <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
@@ -105,20 +105,20 @@
 
 <!-- ============ БАРААНЫ ТҮҮХ ============ -->
 <div class="screen" id="scrItemHist">
-  <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2 id="ihTitle"></h2></div>
   <div class="card">
     <h3>Хугацаа</h3>
     <p class="label">Эхлэх огноо</p>
-    <input type="date" class="date-in" id="ihFrom" onchange="setItemHistFrom(this.value)">
+    <input type="date" class="date-in" id="ihFrom" onchange="setItemHistFrom(this.value)" enterkeyhint="done">
     <p class="label" style="margin-top:12px">Дуусах огноо</p>
-    <input type="date" class="date-in" id="ihTo" onchange="setItemHistTo(this.value)">
+    <input type="date" class="date-in" id="ihTo" onchange="setItemHistTo(this.value)" enterkeyhint="done">
   </div>
   <div id="ihBody"></div>
 </div>
 
 <!-- ============ ХӨРГҮҮР ============ -->
 <div class="screen" id="scrFridge">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="frTitle"></h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2 id="frTitle"></h2></div>
   <div class="card"><h3>Үлдэгдэл · <span id="frDate"></span></h3><div class="scroll-box" id="frList"></div></div>
   <div class="row-2">
     <button class="btn btn-in" onclick="openEntry()">Оруулах</button>
@@ -132,7 +132,7 @@
   <div class="bar"><button class="back" onclick="backToFridge()">Буцах</button><h2 id="enTitle"></h2></div>
   <div class="card">
     <h3>Огноо</h3>
-    <input type="date" class="date-in" id="enDate" onchange="setEntryDate(this.value)">
+    <input type="date" class="date-in" id="enDate" onchange="setEntryDate(this.value)" enterkeyhint="done">
   </div>
   <div class="card">
     <p class="label">Хянаж оруулсан</p>
@@ -155,10 +155,10 @@
 
 <!-- ============ ГАДНААС ХУДАЛДАЖ АВСАН ============ -->
 <div class="screen" id="scrBuy">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Гаднаас авсан</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Гаднаас авсан</h2></div>
   <div class="card">
     <h3>Огноо</h3>
-    <input type="date" class="date-in" id="buyDate" onchange="setBuyDate(this.value)">
+    <input type="date" class="date-in" id="buyDate" onchange="setBuyDate(this.value)" enterkeyhint="done">
   </div>
   <div class="card">
     <h3>Аль хөргүүрт хийх вэ</h3>
@@ -171,14 +171,14 @@
     <p class="label">Хэнээс авсан</p>
     <div class="sel" id="sel_supplier"></div>
     <div class="stack" id="buyOrgBox" style="display:none;margin-top:12px">
-      <input type="text" id="bsName" placeholder="Байгууллагын нэр">
-      <input type="text" id="bsReg" placeholder="Регистрийн дугаар">
-      <input type="tel"  id="bsPhone" placeholder="Утас">
+      <input type="text" id="bsName" placeholder="Байгууллагын нэр" enterkeyhint="done">
+      <input type="text" id="bsReg" placeholder="Регистрийн дугаар" enterkeyhint="done">
+      <input type="tel"  id="bsPhone" placeholder="Утас" enterkeyhint="done">
       <button class="btn btn-in btn-sm" onclick="addSupplierInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="buyPersonBox" style="display:none;margin-top:12px">
-      <input type="text" id="bpName" placeholder="Хувь хүний нэр" oninput="buySupName(this.value)">
-      <input type="tel"  id="bpPhone" placeholder="Утас" oninput="buySupPhone(this.value)" style="margin-bottom:0">
+      <input type="text" id="bpName" placeholder="Хувь хүний нэр" oninput="buySupName(this.value)" enterkeyhint="done">
+      <input type="tel"  id="bpPhone" placeholder="Утас" oninput="buySupPhone(this.value)" style="margin-bottom:0" enterkeyhint="done">
     </div>
   </div>
   <div class="card">
@@ -200,14 +200,14 @@
     <p class="label">Хүлээн авагч</p>
     <div class="sel" id="sel_partner"></div>
     <div class="stack" id="newOrgBox" style="display:none;margin-top:12px">
-      <input type="text" id="noName" placeholder="Байгууллагын нэр">
-      <input type="text" id="noReg" placeholder="Регистрийн дугаар">
-      <input type="tel"  id="noPhone" placeholder="Утас">
+      <input type="text" id="noName" placeholder="Байгууллагын нэр" enterkeyhint="done">
+      <input type="text" id="noReg" placeholder="Регистрийн дугаар" enterkeyhint="done">
+      <input type="tel"  id="noPhone" placeholder="Утас" enterkeyhint="done">
       <button class="btn btn-in btn-sm" onclick="addOrgInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="personBox" style="display:none;margin-top:12px">
-      <input type="text" id="personName" placeholder="Хувь хүний нэр" oninput="outPersonName(this.value)">
-      <input type="tel"  id="personPhone" placeholder="Утас" oninput="outPersonPhone(this.value)" style="margin-bottom:0">
+      <input type="text" id="personName" placeholder="Хувь хүний нэр" oninput="outPersonName(this.value)" enterkeyhint="done">
+      <input type="tel"  id="personPhone" placeholder="Утас" oninput="outPersonPhone(this.value)" style="margin-bottom:0" enterkeyhint="done">
     </div>
   </div>
   <div class="card">
@@ -239,7 +239,7 @@
 
 <!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
 <div class="screen" id="scrDebt">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Өглөг, авлага</h2></div>
   <div class="seg" id="debtSeg">
     <button class="on" onclick="setDebtKind('due',this)">Авлага</button>
     <button onclick="setDebtKind('owe',this)">Өглөг</button>
@@ -251,10 +251,10 @@
       <button id="dbR2" onclick="setDebtRange('day')">Өдрөөр</button>
       <button id="dbR3" onclick="setDebtRange('all')">Бүгд</button>
     </div>
-    <input type="month" class="date-in" id="debtMonth" onchange="setDebtMonth(this.value)">
-    <input type="date" class="date-in" id="debtDate" onchange="setDebtDate(this.value)" style="display:none">
+    <input type="month" class="date-in" id="debtMonth" onchange="setDebtMonth(this.value)" enterkeyhint="done">
+    <input type="date" class="date-in" id="debtDate" onchange="setDebtDate(this.value)" style="display:none" enterkeyhint="done">
     <p class="label" style="margin-top:14px">Нэрээр хайх</p>
-    <input type="text" class="search-in" id="debtSearch" placeholder="Байгууллага, хүний нэр" oninput="setDebtSearch(this.value)">
+    <input type="text" class="search-in" id="debtSearch" placeholder="Байгууллага, хүний нэр" oninput="setDebtSearch(this.value)" enterkeyhint="done">
     <div class="tool-row" style="margin:12px 0 0">
       <button class="on" id="dbShow1" onclick="setDebtShow('open',this)">Үлдэгдэлтэй</button>
       <button id="dbShow2" onclick="setDebtShow('done',this)">Дууссан</button>
@@ -267,14 +267,14 @@
 
 <!-- ============ БАРИМТ, ТҮҮХ ============ -->
 <div class="screen" id="scrRecords">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
   <div class="seg" id="recSeg">
     <button class="on" onclick="setRecFridge(1,this)" id="recBtn1">1-р хөргүүр</button>
     <button onclick="setRecFridge(2,this)" id="recBtn2">2-р хөргүүр</button>
   </div>
   <div class="card">
     <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="recMonth" onchange="setRecMonth(this.value)">
+    <input type="month" class="date-in" id="recMonth" onchange="setRecMonth(this.value)" enterkeyhint="done">
   </div>
   <div class="card">
     <h3>Өдөр бүрийн үлдэгдэл</h3>
@@ -283,7 +283,7 @@
 </div>
 
 <div class="screen" id="scrAudit">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Засварын түүх</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Засварын түүх</h2></div>
   <div class="card">
     <h3>Баримтад хийсэн засварууд</h3>
     <div class="tool-row"><button onclick="deleteSelectedAudits()">Сонгосныг устгах</button></div>
@@ -293,10 +293,10 @@
 
 <!-- ============ ЦАЛИН ============ -->
 <div class="screen" id="scrSalary">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
   <div class="card">
     <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)">
+    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)" enterkeyhint="done">
   </div>
   <div class="card">
     <h3>Ажилчдын цалин · өдрөөр</h3>
@@ -309,20 +309,20 @@
 
 <!-- ============ АЖИЛЧНЫ ДЭЛГЭРЭНГҮЙ ============ -->
 <div class="screen" id="scrWorker">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="wdTitle"></h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2 id="wdTitle"></h2></div>
   <div class="card">
     <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="wdMonth" onchange="setSalMonth(this.value);renderWorkerDetail()">
+    <input type="month" class="date-in" id="wdMonth" onchange="setSalMonth(this.value);renderWorkerDetail()" enterkeyhint="done">
   </div>
   <div id="wdBody"></div>
 </div>
 
 <!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
 <div class="screen" id="scrWork">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
   <div class="card">
     <h3>Огноо</h3>
-    <input type="date" class="date-in" id="workDate" onchange="setWorkDate(this.value)">
+    <input type="date" class="date-in" id="workDate" onchange="setWorkDate(this.value)" enterkeyhint="done">
   </div>
   <div class="card">
     <p class="label">Ажилчин</p>
@@ -345,7 +345,7 @@
 
 <!-- ============ ТОХИРГОО ============ -->
 <div class="screen" id="scrAdmin">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тохиргоо</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Тохиргоо</h2></div>
   <div class="menu">
     <button class="btn" onclick="openDebt()">Өглөг, авлага</button>
     <button class="btn" onclick="openRecords()">Баримт, түүх</button>
@@ -362,19 +362,19 @@
 </div>
 
 <div class="screen" id="scrItems">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Бараа, үнэ</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Бараа, үнэ</h2></div>
   <div class="card">
     <h3>Ангилал бүрийн нэгж ба үнэ</h3>
     <div class="scroll-box" style="max-height:60vh" id="itemsEdit"></div>
     <div class="add-row">
-      <input type="text" id="newItemName" placeholder="Шинэ барааны нэр">
+      <input type="text" id="newItemName" placeholder="Шинэ барааны нэр" enterkeyhint="done">
       <button onclick="addItem()">Нэмэх</button>
     </div>
   </div>
 </div>
 
 <div class="screen" id="scrFridgeItems">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөргүүрийн ангилал</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Хөргүүрийн ангилал</h2></div>
   <div class="seg" id="fiSeg">
     <button class="on" onclick="setFiFridge(1,this)" id="fiBtn1">1-р хөргүүр</button>
     <button onclick="setFiFridge(2,this)" id="fiBtn2">2-р хөргүүр</button>
@@ -390,19 +390,19 @@
 </div>
 
 <div class="screen" id="scrWorkers">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Ажилчид</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Ажилчид</h2></div>
   <div class="card">
     <h3>Ажилчдын жагсаалт</h3>
     <div class="scroll-box" style="max-height:58vh" id="workersEdit"></div>
     <div class="add-row">
-      <input type="text" id="newWorkerName" placeholder="Шинэ ажилчны нэр">
+      <input type="text" id="newWorkerName" placeholder="Шинэ ажилчны нэр" enterkeyhint="done">
       <button onclick="addWorker()">Нэмэх</button>
     </div>
   </div>
 </div>
 
 <div class="screen" id="scrRates">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Цалингийн тариф</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Цалингийн тариф</h2></div>
   <div class="card">
     <p class="label">Ажилчин</p>
     <div class="sel" id="sel_rate"></div>
@@ -414,66 +414,80 @@
 </div>
 
 <div class="screen" id="scrPartners">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч байгууллага</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Харилцагч байгууллага</h2></div>
   <div class="card">
     <h3>Байнга ажилладаг харилцагчид</h3>
     <div class="scroll-box" style="max-height:40vh" id="partnersEdit"></div>
     <div class="add-row" style="display:block">
-      <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px">
-      <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px">
-      <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
+      <div class="seg" id="npSeg" style="margin-bottom:12px">
+        <button class="on" onclick="setPartnerKind('org',this)">Байгууллага</button>
+        <button onclick="setPartnerKind('person',this)">Хувь хүн</button>
+      </div>
+      <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px" enterkeyhint="done">
+      <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px" enterkeyhint="done">
+      <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px" enterkeyhint="done">
       <button class="btn btn-in btn-sm" onclick="addPartner()">Нэмэх</button>
     </div>
   </div>
 </div>
 
 <div class="screen" id="scrCompany">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Байгууллагын мэдээлэл</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Байгууллагын мэдээлэл</h2></div>
   <div class="card">
     <h3>Баримтын толгойд хэвлэгдэнэ</h3>
     <div class="stack">
-      <input type="text" id="coName" placeholder="Байгууллагын нэр">
-      <input type="text" id="coPhone" placeholder="Холбогдох утас">
-      <input type="text" id="coReg" placeholder="Регистрийн дугаар">
+      <input type="text" id="coName" placeholder="Байгууллагын нэр" enterkeyhint="done">
+      <input type="text" id="coPhone" placeholder="Холбогдох утас" enterkeyhint="done">
+      <input type="text" id="coReg" placeholder="Регистрийн дугаар" enterkeyhint="done">
     </div>
   </div>
   <div class="card">
     <h3>Мөнгө хүлээн авах данс</h3>
     <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Хувь хүнд бараа олгосон баримт дээр энэ данс хэвлэгдэнэ</p>
     <div class="stack">
-      <input type="text" id="coBank" placeholder="Банкны нэр">
-      <input type="text" id="coAccount" placeholder="Дансны дугаар">
-      <input type="text" id="coAccName" placeholder="Данс эзэмшигчийн нэр">
+      <input type="text" id="coBank" placeholder="Банкны нэр" enterkeyhint="done">
+      <input type="text" id="coAccount" placeholder="Дансны дугаар" enterkeyhint="done">
+      <input type="text" id="coAccName" placeholder="Данс эзэмшигчийн нэр" enterkeyhint="done">
     </div>
     <button class="btn btn-in btn-sm" onclick="saveCompany()">Хадгалах</button>
   </div>
 </div>
 
 <div class="screen" id="scrCodes">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нэвтрэх код</h2></div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Нэвтрэх код</h2></div>
   <div class="card">
     <h3>4 оронтой код</h3>
     <div class="edit-row"><span class="nm">Ажилчны код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center"></div>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center" enterkeyhint="done"></div>
     <div class="edit-row"><span class="nm">Админы код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center" enterkeyhint="done"></div>
     <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
   </div>
 </div>
 
 <div class="screen" id="scrBackup">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нөөцлөх</h2></div>
-  <div class="card">
-    <h3>Бүх мэдээлэл</h3>
-    <textarea id="bkText" style="height:150px"></textarea>
-    <div class="row-2" style="margin-top:12px">
-      <button class="btn btn-in btn-sm" onclick="copyBackup()">Хуулах</button>
-      <button class="btn btn-sm" onclick="restoreBackup()">Сэргээх</button>
-    </div>
+  <div class="bar"><button class="back" onclick="goBack()">Буцах</button><h2>Нөөцлөх</h2></div>
+  <div class="card" id="bkGate">
+    <h3>Админы код оруулна уу</h3>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">
+      Энэ хэсэгт бүх өгөгдөл ил харагдана</p>
+    <input type="password" inputmode="numeric" maxlength="4" class="date-in" id="bkPin"
+           placeholder="••••" style="text-align:center;letter-spacing:8px" enterkeyhint="done">
+    <button class="btn btn-in btn-sm" style="margin-top:12px" onclick="unlockBackup()">Нээх</button>
   </div>
-  <div class="card">
-    <h3>Аюултай үйлдэл</h3>
-    <button class="btn btn-out btn-sm" onclick="wipeAll()">Бүх бүртгэлийг устгах</button>
+  <div id="bkPanel" style="display:none">
+    <div class="card">
+      <h3>Бүх мэдээлэл</h3>
+      <textarea id="bkText" style="height:150px"></textarea>
+      <div class="row-2" style="margin-top:12px">
+        <button class="btn btn-in btn-sm" onclick="copyBackup()">Хуулах</button>
+        <button class="btn btn-sm" onclick="restoreBackup()">Сэргээх</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Аюултай үйлдэл</h3>
+      <button class="btn btn-out btn-sm" onclick="wipeAll()">Бүх бүртгэлийг устгах</button>
+    </div>
   </div>
 </div>
 
