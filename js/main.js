@@ -20,7 +20,8 @@ import * as Settings from './settings.js';
 loadLocal();
 
 Object.assign(window,
-  { show:Router.show, toggleSel:UI.toggleSel, chooseSel:UI.chooseSel },
+  { show:Router.show, toggleSel:UI.toggleSel, chooseSel:UI.chooseSel,
+    toggleMultiSel:UI.toggleMultiSel, closeKeyboard:UI.closeKeyboard },
   { pickToggle:Picker.pickToggle, pickSet:Picker.pickSet, pickAll:Picker.pickAll },
   Auth, Fridge, Entry, Work, Buy, Out, Receipt, Dash, Debt, Records, Salary, Settings
 );
