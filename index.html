@@ -133,6 +133,10 @@
     <input type="date" class="date-in" id="enDate" onchange="setEntryDate(this.value)">
   </div>
   <div class="card">
+    <p class="label">Хянаж оруулсан</p>
+    <div class="sel" id="sel_recorder"></div>
+  </div>
+  <div class="card">
     <h3>Оруулах бараа</h3>
     <div class="tool-row">
       <button onclick="pickAll('entry',true)">Бүгдийг сонгох</button>
@@ -141,16 +145,8 @@
     <div class="scroll-box" id="entryItems"></div>
   </div>
   <div class="card">
-    <h3>Ажилласан ажилчид</h3>
-    <div class="tool-row">
-      <button onclick="allEntryWorkers(true)">Бүгдийг сонгох</button>
-      <button onclick="allEntryWorkers(false)">Цэвэрлэх</button>
-    </div>
-    <div class="sel" id="sel_entryWorker"></div>
-  </div>
-  <div class="card">
-    <h3>Цалингийн тооцоо</h3>
-    <div id="entryCalc"></div>
+    <h3>Хураангуй</h3>
+    <div id="entrySummary"></div>
   </div>
   <div class="save-wrap"><button class="btn btn-in" id="entrySave" onclick="saveEntry()">Хадгалах</button></div>
 </div>
@@ -179,9 +175,8 @@
       <button class="btn btn-in btn-sm" onclick="addSupplierInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="buyPersonBox" style="display:none;margin-top:12px">
-      <input type="text" id="bpName" placeholder="Хувь хүний нэр">
-      <input type="tel"  id="bpPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addSupplierPersonInline()">Нэмээд сонгох</button>
+      <input type="text" id="bpName" placeholder="Хувь хүний нэр" oninput="buySupName(this.value)">
+      <input type="tel"  id="bpPhone" placeholder="Утас" oninput="buySupPhone(this.value)" style="margin-bottom:0">
     </div>
   </div>
   <div class="card">
@@ -209,9 +204,8 @@
       <button class="btn btn-in btn-sm" onclick="addOrgInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="personBox" style="display:none;margin-top:12px">
-      <input type="text" id="personName" placeholder="Хувь хүний нэр">
-      <input type="tel"  id="personPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addPersonInline()">Нэмээд сонгох</button>
+      <input type="text" id="personName" placeholder="Хувь хүний нэр" oninput="outPersonName(this.value)">
+      <input type="tel"  id="personPhone" placeholder="Утас" oninput="outPersonPhone(this.value)" style="margin-bottom:0">
     </div>
   </div>
   <div class="card">
@@ -309,7 +303,47 @@
     <input type="date"  class="date-in" id="salDate"  onchange="setSalDate(this.value)">
     <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)" style="display:none">
   </div>
+  <div class="card" id="salAddCard" style="display:none">
+    <button class="btn btn-in" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
+    <button class="btn btn-sm" style="margin-top:10px" onclick="openMatrix()">Сарын нэгтгэл хүснэгт</button>
+  </div>
   <div class="card"><div class="scroll-box" style="max-height:70vh" id="salList"></div></div>
+</div>
+
+<!-- ============ САРЫН НЭГТГЭЛ ============ -->
+<div class="screen" id="scrMatrix">
+  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="mxTitle">Сарын нэгтгэл</h2></div>
+  <div class="card">
+    <h3>Он, сар</h3>
+    <input type="month" class="date-in" id="mxMonth" onchange="setMatrixMonth(this.value)">
+  </div>
+  <div id="mxBody"></div>
+</div>
+
+<!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
+<div class="screen" id="scrWork">
+  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
+  <div class="card">
+    <h3>Огноо</h3>
+    <input type="date" class="date-in" id="workDate" onchange="setWorkDate(this.value)">
+  </div>
+  <div class="card">
+    <p class="label">Ажилчин</p>
+    <div class="sel" id="sel_workw"></div>
+  </div>
+  <div class="card">
+    <h3>Ямар ангилал дээр хэдийг хийсэн</h3>
+    <div class="tool-row">
+      <button onclick="pickAll('work',true)">Бүгдийг сонгох</button>
+      <button onclick="pickAll('work',false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="workItems"></div>
+  </div>
+  <div class="card">
+    <h3>Тооцоо</h3>
+    <div id="workTotal"></div>
+  </div>
+  <div class="save-wrap"><button class="btn btn-in" id="workSave" onclick="saveWork()">Хадгалах</button></div>
 </div>
 
 <!-- ============ ТОХИРГОО ============ -->
@@ -426,8 +460,6 @@
       <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center"></div>
     <div class="edit-row"><span class="nm">Админы код</span>
       <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
-    <div class="edit-row"><span class="nm">Нөөцлөх код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinBackup" style="max-width:110px;text-align:center"></div>
     <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
   </div>
 </div>
@@ -448,7 +480,6 @@
   </div>
 </div>
 
-<button type="button" id="kbDone" class="kb-done" onclick="document.activeElement && document.activeElement.blur()">Болсон</button>
 <div id="toast"></div>
 
 
