@@ -89,7 +89,7 @@ body{
   text-transform:uppercase;letter-spacing:.09em;
   padding-bottom:10px;border-bottom:1px solid var(--line);
 }
-.scroll-box{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll-box{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 
 /* ---------- Нэвтрэх ---------- */
 #scrLogin{align-items:center;justify-content:center;padding:20px;}
@@ -296,6 +296,13 @@ table.tbl tr.day-head td{
 table.tbl tr.day-head td.amt{color:var(--blue-ink);}
 table.tbl tr.sum td{background:var(--cream);font-weight:700;border-top:1.5px solid var(--line);}
 .tbl-note{font-size:12px;color:var(--muted);margin:8px 2px 0;}
+/* Матриц хүснэгтэд нэрийн багана байрандаа үлдэнэ */
+table.tbl th:first-child,table.tbl td:first-child{
+  position:sticky;left:0;z-index:2;background:var(--paper);
+  box-shadow:1px 0 0 var(--line);
+}
+table.tbl th:first-child{z-index:3;background:var(--cream);}
+table.tbl tr.sum td:first-child,table.tbl tr.day-head td:first-child{background:var(--cream);}
 .chain{font-size:13px;font-weight:600;color:var(--muted);word-break:break-word;display:block;margin-top:2px;}
 
 /* ---------- Хөдөлгөөн ---------- */
@@ -345,19 +352,6 @@ table.tbl tr.sum td{background:var(--cream);font-weight:700;border-top:1.5px sol
 .receipt .sig{margin-top:16px;}
 .receipt .sig-line{border-bottom:1px solid #000;height:26px;margin:2px 0 10px;}
 
-/* ---------- Гар хаах товч (таблет) ---------- */
-.kb-done{
-  position:fixed;right:14px;
-  bottom:calc(env(safe-area-inset-bottom) + 14px);
-  z-index:100;
-  padding:11px 20px;border:none;border-radius:999px;
-  background:var(--blue);color:#fff;font:inherit;font-size:15px;font-weight:650;
-  box-shadow:var(--shadow-lift);cursor:pointer;
-  opacity:0;pointer-events:none;transform:translateY(12px);
-  transition:opacity .15s, transform .15s;
-}
-.kb-done.show{opacity:1;pointer-events:auto;transform:translateY(0);}
-
 /* ---------- Мэдэгдэл ---------- */
 #toast{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);
@@ -388,7 +382,6 @@ table.tbl tr.sum td{background:var(--cream);font-weight:700;border-top:1.5px sol
   .screen{display:none!important;}
   /* Мэдэгдэл, дээд мөр, товчнууд цаасан дээр гарах ёсгүй */
   #toast{display:none!important;}
-  .kb-done{display:none!important;}
   #scrReceipt{display:block!important;min-height:auto;padding:0;}
   #scrReceipt .bar,#scrReceipt .no-print{display:none!important;}
   .receipt{box-shadow:none;max-width:100%;margin:0 0 10px;padding:0;border-radius:0;}
