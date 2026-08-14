@@ -3,7 +3,7 @@
 import { db, state, uid, saveLocal } from './state.js';
 import { esc, f, int, num, isoStr, tsOfIso, itemName, itemBuyPrice, money,
          hasKg, hasPcs, mainUnitOf, uShort, isSack, sackNote, fridgeName } from './util.js';
-import { $, toast, selectHTML, partyOptions, partyPlaceholder, onChoose } from './ui.js';
+import { $, toast, selectHTML, orgOptions, onChoose } from './ui.js';
 import { show } from './router.js';
 import { registerPicker, renderPicker, qtyOf } from './picker.js';
 import { fbSet, save, pushSettings, nextNo } from './sync.js';
@@ -18,7 +18,7 @@ registerPicker("buy",{
   onAdd: id => { if(!B().prices[id]) B().prices[id]=String(itemBuyPrice(id)||""); },
   afterFields: id => `<div class="pick-fields" style="padding-bottom:6px">
       <label class="fld">
-        <input class="num-in" type="number" inputmode="decimal" min="0" value="${esc(B().prices[id]||"")}"
+        <input class="num-in" enterkeyhint="done" type="number" inputmode="decimal" min="0" value="${esc(B().prices[id]||"")}"
                oninput="setBuyPrice('${id}',this.value)">
         <span>₮/${uShort(mainUnitOf(id))}</span></label></div>`,
   lineHTML: id => buyLineText(id),
@@ -28,7 +28,7 @@ registerPicker("buy",{
 export function openBuy(){
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   state.buy={ date:isoStr(), fridge:state.curFridge||1, supplier:null,
-              supplierKind:null, items:{}, prices:{} };
+              supName:"", supPhone:"", items:{}, prices:{} };
   const d=$("buyDate"); d.value=B().date; d.max=isoStr();
   $("bpName").value=""; $("bpPhone").value="";
   $("buyBtn1").textContent=fridgeName(1);
@@ -44,13 +44,8 @@ export function setBuyFridge(id,btn){
   renderBuy();
 }
 onChoose.supplier = id => {
-  const b=B();
-  if(id==="__kind_person"){ b.supplierKind="person"; b.supplier=null; renderBuy(); return; }
-  if(id==="__kind_org")   { b.supplierKind="org";    b.supplier=null; renderBuy(); return; }
-  if(id==="__back")       { b.supplierKind=null;     b.supplier=null; renderBuy(); return; }
-  b.supplier=id; renderBuy();
-  if(id==="__addorg")    setTimeout(()=>$("bsName").focus(),50);
-  if(id==="__addperson") setTimeout(()=>$("bpName").focus(),50);
+  B().supplier=id; renderBuy();
+  if(id==="__addorg") setTimeout(()=>$("bsName").focus(),50);
 };
 export function addSupplierInline(){
   const n=$("bsName").value.trim();
@@ -61,20 +56,10 @@ export function addSupplierInline(){
   B().supplier=p.id; renderBuy();
   toast(n+" нэмэгдэж сонгогдлоо");
 }
-export function addSupplierPersonInline(){
-  const n=$("bpName").value.trim();
-  if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
-  const p={id:uid(),name:n,phone:$("bpPhone").value.trim()};
-  db.persons.push(p); save();
-  $("bpName").value=""; $("bpPhone").value="";
-  B().supplier=p.id; B().supplierKind="person"; renderBuy();
-  toast(n+" нэмэгдэж сонгогдлоо");
-}
 export function renderBuy(){
-  const b=B();
-  $("sel_supplier").innerHTML=selectHTML("supplier",partyOptions(b.supplierKind,db.partners,db.persons),b.supplier,partyPlaceholder(b.supplierKind));
-  $("buyOrgBox").style.display    = b.supplier==="__addorg" ? "block" : "none";
-  $("buyPersonBox").style.display = b.supplier==="__addperson" ? "block" : "none";
+  $("sel_supplier").innerHTML=selectHTML("supplier",orgOptions(db.partners),B().supplier,"Байгууллага эсвэл хувь хүн");
+  $("buyOrgBox").style.display    = B().supplier==="__addorg" ? "block" : "none";
+  $("buyPersonBox").style.display = B().supplier==="__person" ? "block" : "none";
   renderPicker("buy"); renderBuyTotal();
 }
 export function setBuyPrice(id,v){
@@ -101,15 +86,23 @@ export async function saveBuy(){
   const b=B();
   const ids=Object.keys(b.items).filter(id=>buyQty(id)>0);
   if(!ids.length){ toast("Бараа болон хэмжээг нь оруулна уу"); return; }
-  if(!b.supplier || b.supplier==="__addorg" || b.supplier==="__addperson"){ toast("Хэнээс авснаа сонгоно уу"); return; }
+  if(!b.supplier || b.supplier==="__addorg"){ toast("Хэнээс авснаа сонгоно уу"); return; }
+  if(b.supplier==="__person" && !b.supName.trim()){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
 
   state.busy.buy=true;
   const btn=$("buySave"); const label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="Хадгалж байна…"; }
   try{
-    const sup = b.supplierKind==="person"
-      ? (p=>({name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id}))(db.persons.find(x=>x.id===b.supplier)||{name:"—",phone:""})
-      : (p=>({name:p.name,reg:p.reg||"",phone:p.phone||"",type:"org",pid:p.id}))(db.partners.find(x=>x.id===b.supplier));
+    let sup;
+    if(b.supplier==="__person"){
+      const nm=b.supName.trim();
+      let p=db.partners.find(x=>x.kind==="person" && x.name===nm);
+      if(!p){ p={id:uid(),name:nm,reg:"",phone:b.supPhone.trim(),kind:"person"}; db.partners.push(p); save(); }
+      sup={name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id};
+    }else{
+      const p=db.partners.find(x=>x.id===b.supplier);
+      sup={name:p.name,reg:p.reg||"",phone:p.phone||"",type:p.kind==="person"?"person":"org",pid:p.id};
+    }
 
     const ts=tsOfIso(b.date);
     const lines=ids.map(id=>{
@@ -144,3 +137,7 @@ export async function saveBuy(){
     const x=$("buySave"); if(x){ x.disabled=false; x.textContent=label||"Хадгалах"; }
   }
 }
+
+/* Хувь хүнээс авах үеийн нэр, утас */
+export function buySupName(v){ B().supName=v; }
+export function buySupPhone(v){ B().supPhone=v; }
