@@ -92,18 +92,9 @@ export function saveWork(){
     fresh.forEach(r=>fbSet("works",r.id,r));
     const total=fresh.reduce((s,r)=>s+payFor(r),0);
     toast(`${workerName(w)} · ${money(total)} бүртгэгдлээ`);
-    show("scrSalary");
-    window.renderSalary && window.renderSalary();
+    window.openSalary && window.openSalary();
   } finally {
     state.busy.work=false;
     const b=$("workSave"); if(b) b.disabled=false;
   }
-}
-export function delWork(id){
-  if(!requireOnline()) return;
-  if(!confirm("Энэ ажлын бүртгэлийг устгах уу?")) return;
-  db.works=db.works.filter(x=>x.id!==id);
-  saveLocal(); fbDel("works",id);
-  window.renderSalary && window.renderSalary();
-  toast("Устгалаа");
 }
