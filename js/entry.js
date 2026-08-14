@@ -2,7 +2,7 @@
 import { db, state, uid, saveLocal } from './state.js';
 import { esc, f, int, num, isoStr, tsOfIso, itemName, workerName, liveWorkers,
          hasKg, hasPcs, payUnitOf, uShort, rateOf, fridgeName, money } from './util.js';
-import { $, toast } from './ui.js';
+import { $, toast, multiSelectHTML, onMultiChoose } from './ui.js';
 import { show } from './router.js';
 import { registerPicker, renderPicker, blankQty } from './picker.js';
 import { fbSet } from './sync.js';
@@ -33,15 +33,14 @@ export function openEntry(){
 }
 export function setEntryDate(v){ E().date = v || isoStr(); }
 
+onMultiChoose.entryWorker = id => toggleEntryWorker(id);
+
 export function renderEntryWorkers(){
   const ws=liveWorkers();
-  $("entryWorkers").innerHTML = ws.length ? ws.map(w=>{
-    const on=E().workers.indexOf(w.id)>=0;
-    const tag = w.payType==="fixed" ? ` <small>тогтмол цалинтай</small>` : "";
-    return `<div class="pick">
-      <button type="button" class="check-row${on?" on":""}" onclick="toggleEntryWorker('${w.id}')">
-        <span class="tick">✓</span><span>${esc(w.name)}${tag}</span></button></div>`;
-  }).join("") : `<div class="empty">Ажилчин бүртгээгүй байна.<br>Тохиргоо → Ажилчид хэсгээс нэмнэ үү.</div>`;
+  const opts=ws.map(w=>({id:w.id, name:w.name + (w.payType==="fixed" ? " · тогтмол цалинтай" : "")}));
+  $("sel_entryWorker").innerHTML = multiSelectHTML("entryWorker", opts, E().workers,
+    "Ажилчнаа сонгоно уу",
+    "Ажилчин бүртгээгүй байна.<br>Тохиргоо → Ажилчид хэсгээс нэмнэ үү.");
 }
 export function toggleEntryWorker(id){
   const ws=E().workers, i=ws.indexOf(id);
