@@ -291,33 +291,28 @@
 
 <!-- ============ ЦАЛИН ============ -->
 <div class="screen" id="scrSalary">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Цалин</h2></div>
-  <div class="sub" id="salNote" style="display:none">Өнөөдрийн бүртгэлээ шалгах</div>
-  <div class="seg" id="salSeg">
-    <button class="on" onclick="setPeriod('day',this)">Өдрөөр</button>
-    <button onclick="setPeriod('month',this)">Сараар</button>
-    <button onclick="setPeriod('all',this)">Бүгд</button>
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
+  <div class="card">
+    <h3>Он, сар</h3>
+    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)">
   </div>
-  <div class="card" id="salPickCard">
-    <h3 id="salPickTitle">Огноо</h3>
-    <input type="date"  class="date-in" id="salDate"  onchange="setSalDate(this.value)">
-    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)" style="display:none">
+  <div class="card">
+    <h3>Ажилчдын цалин · өдрөөр</h3>
+    <div id="salBody"></div>
   </div>
   <div class="card" id="salAddCard" style="display:none">
     <button class="btn btn-in" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
-    <button class="btn btn-sm" style="margin-top:10px" onclick="openMatrix()">Сарын нэгтгэл хүснэгт</button>
   </div>
-  <div class="card"><div class="scroll-box" style="max-height:70vh" id="salList"></div></div>
 </div>
 
-<!-- ============ САРЫН НЭГТГЭЛ ============ -->
-<div class="screen" id="scrMatrix">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="mxTitle">Сарын нэгтгэл</h2></div>
+<!-- ============ АЖИЛЧНЫ ДЭЛГЭРЭНГҮЙ ============ -->
+<div class="screen" id="scrWorker">
+  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="wdTitle"></h2></div>
   <div class="card">
     <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="mxMonth" onchange="setMatrixMonth(this.value)">
+    <input type="month" class="date-in" id="wdMonth" onchange="setSalMonth(this.value);renderWorkerDetail()">
   </div>
-  <div id="mxBody"></div>
+  <div id="wdBody"></div>
 </div>
 
 <!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
