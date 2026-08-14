@@ -49,6 +49,23 @@ document.addEventListener("click", e=>{
   if(window.__openSel && e.target.closest && !e.target.closest(".sel")) closeAllSel();
 });
 
+/* Таблет дээр input дээр дарахад дэлгэцийн гар гарч ирээд, өөр газар
+   дарахтал арилдаггүй тул зөвхөн "Болсон" товчоор л хаах боломж өгнө. */
+const KB_TAGS=["INPUT","TEXTAREA","SELECT"];
+document.addEventListener("focusin", e=>{
+  if(KB_TAGS.indexOf(e.target.tagName)>=0){
+    const b=$("kbDone"); if(b) b.classList.add("show");
+  }
+});
+document.addEventListener("focusout", ()=>{
+  /* Талбар хооронд шилжихэд түр salalgada — хамгийн сүүлд идэвхтэй
+     элементийг шалгаад, input биш л бол товчийг нуана. */
+  setTimeout(()=>{
+    const a=document.activeElement, b=$("kbDone");
+    if(b && (!a || KB_TAGS.indexOf(a.tagName)<0)) b.classList.remove("show");
+  },80);
+});
+
 /* Хүлээн авагч/нийлүүлэгч сонголт — эхлээд "Хувь хүн" эсвэл "Байгууллага"
    ангилал сонгуулаад, дараа нь тухайн ангиллын жагсаалтыг харуулна.
    Гаргах, Худалдан авах хоёрт ижил ашиглагдана. */
