@@ -40,12 +40,12 @@ export function fbDel(coll,id){
 export function pushSettings(){
   fbSet("app","config",{
     pin:db.pin, adminPin:db.adminPin, company:db.company, fridges:db.fridges,
-    receiptNo:db.receiptNo, purchaseNo:db.purchaseNo, lastIssuer:db.lastIssuer||null
+    receiptNo:db.receiptNo, purchaseNo:db.purchaseNo,
+    lastIssuer:db.lastIssuer||null, lastRecorder:db.lastRecorder||null
   });
   fbSet("app","items",   {list:db.items});
   fbSet("app","workers", {list:db.workers});
   fbSet("app","partners",{list:db.partners});
-  fbSet("app","persons", {list:db.persons});
 }
 /* Тохиргоо өөрчлөгдөх бүрд дуудна */
 export function save(){ saveLocal(); pushSettings(); }
@@ -61,11 +61,11 @@ export function startSync(){
     db.pin=d.pin||db.pin; db.adminPin=d.adminPin||db.adminPin;
     db.company=d.company||db.company; db.fridges=d.fridges||db.fridges;
     db.receiptNo=d.receiptNo||0; db.purchaseNo=d.purchaseNo||0;
-    db.lastIssuer=d.lastIssuer||null;
+    db.lastIssuer=d.lastIssuer||null; db.lastRecorder=d.lastRecorder||null;
     normalize(); saveLocal(); refreshActive();
   }, e=>{ console.error(e); setSyncState("err"); });
 
-  [["items","items"],["workers","workers"],["partners","partners"],["persons","persons"]].forEach(([doc,field])=>{
+  [["items","items"],["workers","workers"],["partners","partners"]].forEach(([doc,field])=>{
     F.onSnapshot(F.doc(F.fs,"app",doc), snap=>{
       if(!snap.exists()) return;
       db[field]=snap.data().list||[];
@@ -73,7 +73,7 @@ export function startSync(){
     }, e=>console.error(e));
   });
 
-  ["log","receipts","purchases","audits","settlements","wagepays"].forEach(coll=>{
+  ["log","receipts","purchases","audits","settlements","wagepays","works"].forEach(coll=>{
     F.onSnapshot(F.collection(F.fs,coll), snap=>{
       db[coll]=snap.docs.map(d=>d.data());
       normalize(); saveLocal(); refreshActive();
