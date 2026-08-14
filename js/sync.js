@@ -45,6 +45,7 @@ export function pushSettings(){
   fbSet("app","items",   {list:db.items});
   fbSet("app","workers", {list:db.workers});
   fbSet("app","partners",{list:db.partners});
+  fbSet("app","persons", {list:db.persons});
 }
 /* Тохиргоо өөрчлөгдөх бүрд дуудна */
 export function save(){ saveLocal(); pushSettings(); }
@@ -64,7 +65,7 @@ export function startSync(){
     normalize(); saveLocal(); refreshActive();
   }, e=>{ console.error(e); setSyncState("err"); });
 
-  [["items","items"],["workers","workers"],["partners","partners"]].forEach(([doc,field])=>{
+  [["items","items"],["workers","workers"],["partners","partners"],["persons","persons"]].forEach(([doc,field])=>{
     F.onSnapshot(F.doc(F.fs,"app",doc), snap=>{
       if(!snap.exists()) return;
       db[field]=snap.data().list||[];
