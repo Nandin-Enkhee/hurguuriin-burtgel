@@ -127,18 +127,9 @@ export async function makeReceipt(){
   const btn=$("outSave"); const label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="Хадгалж байна…"; }
   try{
-    /* Хувь хүнийг нэг удаа бичихэд харилцагчид бүртгэгдэж, дараа нь
-       жагсаалтаас сонгогдоно. Тохиргооноос устгаж болно. */
-    let buyer;
-    if(c.partner==="__person"){
-      const nm=c.personName.trim();
-      let p=db.partners.find(x=>x.kind==="person" && x.name===nm);
-      if(!p){ p={id:uid(),name:nm,reg:"",phone:c.personPhone.trim(),kind:"person"}; db.partners.push(p); save(); }
-      buyer={name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id};
-    }else{
-      const p=db.partners.find(x=>x.id===c.partner);
-      buyer={name:p.name,reg:p.reg||"",phone:p.phone||"",type:p.kind==="person"?"person":"org",pid:p.id};
-    }
+    const buyer = c.partner==="__person"
+      ? {name:c.personName.trim(),reg:"",phone:c.personPhone.trim(),type:"person",pid:null}
+      : (p=>({name:p.name,reg:p.reg||"",phone:p.phone||"",type:"org",pid:p.id}))(db.partners.find(x=>x.id===c.partner));
 
     const total=outTotal();
     const lines=ids.map(id=>{
