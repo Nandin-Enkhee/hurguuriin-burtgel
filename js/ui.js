@@ -51,6 +51,7 @@ document.addEventListener("click", e=>{
 
 /* Байгууллага сонгох нийтлэг жагсаалт — Гаргах, Худалдан авах хоёрт ижил */
 export function orgOptions(partners){
-  return partners.map(p=>({id:p.id,name:p.name}))
-    .concat([{id:"__person",name:"Хувь хүн"},{id:"__addorg",name:"＋ Шинэ байгууллага нэмэх"}]);
+  return [{id:"__person",name:"Хувь хүн"}]
+    .concat(partners.map(p=>({id:p.id,name:p.name})))
+    .concat([{id:"__addorg",name:"＋ Шинэ байгууллага нэмэх"}]);
 }
