@@ -8,7 +8,7 @@ export function uid(){ return Math.random().toString(36).slice(2,9); }
 
 export function defaults(){
   return {
-    pin:"1234", adminPin:"9999", lastIssuer:null, receiptNo:0, purchaseNo:0,
+    pin:"1234", adminPin:"9999", backupPin:"5555", lastIssuer:null, receiptNo:0, purchaseNo:0,
     company:{ name:"Дэлгэрэх Төв ХХК", phone:"", reg:"", bank:"", account:"", accountName:"" },
     fridges:[{id:1,name:"1-р хөргүүр"},{id:2,name:"2-р хөргүүр"}],
     items:[
@@ -52,6 +52,7 @@ export function normalize(){
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
   db.purchaseNo = db.purchaseNo || 0;
+  if(!db.backupPin) db.backupPin="5555";
   db.company    = Object.assign({}, defaults().company, db.company || {});
   db.fridges    = (db.fridges && db.fridges.length) ? db.fridges : defaults().fridges;
 
