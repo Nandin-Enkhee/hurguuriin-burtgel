@@ -177,8 +177,9 @@
       <button class="btn btn-in btn-sm" onclick="addSupplierInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="buyPersonBox" style="display:none;margin-top:12px">
-      <input type="text" id="bpName" placeholder="Хувь хүний нэр" oninput="buySupName(this.value)">
-      <input type="tel"  id="bpPhone" placeholder="Утас" oninput="buySupPhone(this.value)" style="margin-bottom:0">
+      <input type="text" id="bpName" placeholder="Хувь хүний нэр">
+      <input type="tel"  id="bpPhone" placeholder="Утас">
+      <button class="btn btn-in btn-sm" onclick="addSupplierPersonInline()">Нэмээд сонгох</button>
     </div>
   </div>
   <div class="card">
@@ -206,8 +207,9 @@
       <button class="btn btn-in btn-sm" onclick="addOrgInline()">Нэмээд сонгох</button>
     </div>
     <div class="stack" id="personBox" style="display:none;margin-top:12px">
-      <input type="text" id="personName" placeholder="Хувь хүний нэр" oninput="outPersonName(this.value)">
-      <input type="tel"  id="personPhone" placeholder="Утас" oninput="outPersonPhone(this.value)" style="margin-bottom:0">
+      <input type="text" id="personName" placeholder="Хувь хүний нэр">
+      <input type="tel"  id="personPhone" placeholder="Утас">
+      <button class="btn btn-in btn-sm" onclick="addPersonInline()">Нэмээд сонгох</button>
     </div>
   </div>
   <div class="card">
@@ -416,24 +418,8 @@
 <div class="screen" id="scrPartners">
   <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч</h2></div>
   <div class="card">
-    <h3>Байгууллага</h3>
-    <div class="scroll-box" style="max-height:40vh" id="partnersEdit"></div>
-    <div class="add-row" style="display:block">
-      <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px">
-      <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px">
-      <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
-      <button class="btn btn-in btn-sm" onclick="addPartner()">Нэмэх</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Хувь хүн</h3>
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Гаргах, худалдан авах дээр бичсэн хүн энд өөрөө нэмэгдэнэ</p>
-    <div class="scroll-box" style="max-height:40vh" id="personsEdit"></div>
-    <div class="add-row" style="display:block">
-      <input type="text" id="npPersonName" placeholder="Хувь хүний нэр" style="width:100%;margin-bottom:9px">
-      <input type="tel"  id="npPersonPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
-      <button class="btn btn-in btn-sm" onclick="addPerson()">Нэмэх</button>
-    </div>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-2px 0 12px">Дарж дэлгээд нэр нэмэх, хасах боломжтой</p>
+    <div id="partyBox"></div>
   </div>
 </div>
 
