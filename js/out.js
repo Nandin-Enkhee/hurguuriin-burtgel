@@ -92,8 +92,13 @@ export function addOrgInline(){
 export function addPersonInline(){
   const n=$("personName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
-  const p={id:uid(),name:n,phone:$("personPhone").value.trim()};
-  db.persons.push(p); save();
+  db.persons=db.persons||[];
+  /* Нэг хүнийг давхар бичихээс сэргийлж, байгаа бол түүнийг нь сонгоно */
+  const p=db.persons.find(x=>x.name.toLowerCase()===n.toLowerCase())
+       || {id:uid(),name:n,phone:$("personPhone").value.trim()};
+  if(db.persons.indexOf(p)<0) db.persons.push(p);
+  else if(!p.phone) p.phone=$("personPhone").value.trim();
+  save();
   $("personName").value=""; $("personPhone").value="";
   C().partner=p.id; C().partnerKind="person"; renderOut();
   toast(n+" нэмэгдэж сонгогдлоо");
