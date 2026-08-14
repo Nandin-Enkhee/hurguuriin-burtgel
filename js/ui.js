@@ -103,6 +103,39 @@ document.addEventListener("focusin", e=>{
     setTimeout(positionKbDone,350);
   }
 });
+/* Товч дээр дарахад талбарын фокус эрт алдагдвал click хүртэл хүрэлгүй
+   товч алга болдог тул дарах мөчид фокусыг барьж үлдэнэ. */
+["mousedown","touchstart"].forEach(ev=>{
+  document.addEventListener(ev, e=>{
+    if(e.target.closest && e.target.closest("#kbDone")) e.preventDefault();
+  }, {passive:false});
+});
+
+export function closeKeyboard(){
+  const a=document.activeElement;
+  if(a && KB_TAGS.indexOf(a.tagName)>=0){
+    /* Android-ийн зарим гар blur()-ээр хураагддаггүй — түр readonly
+       болгож өгвөл найдвартай хаагдана. */
+    const ro=a.hasAttribute("readonly");
+    if(!ro) a.setAttribute("readonly","readonly");
+    a.blur();
+    if(!ro) setTimeout(()=>a.removeAttribute("readonly"),150);
+  }
+  if(document.body) document.body.focus && document.body.focus();
+  const b=$("kbDone");
+  if(b) b.classList.remove("show");
+}
+
+/* Гар дээрх "Done"-ийг дарахад ч хураагдана */
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Enter") return;
+  const a=e.target;
+  if(KB_TAGS.indexOf(a.tagName)<0 || a.tagName==="TEXTAREA") return;
+  if(a.closest && a.closest(".code-inputs")) return;   /* нэвтрэх код өөрөө боловсруулна */
+  e.preventDefault();
+  closeKeyboard();
+});
+
 document.addEventListener("focusout", ()=>{
   /* Талбар хооронд шилжихэд түр saatal — хамгийн сүүлд идэвхтэй
      элементийг шалгаад, input биш л бол товчийг нуана. */
