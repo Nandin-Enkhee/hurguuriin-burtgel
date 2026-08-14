@@ -109,6 +109,7 @@ export const state = {
   dash:{ date:null, openOrg:null },
   debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
+  partyOpen:null,
   fiFridge:1,
   receipt:{ backTo:"scrFridge", current:null },
   busy:{ entry:false, buy:false, receipt:false, work:false }
