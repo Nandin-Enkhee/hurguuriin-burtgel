@@ -18,7 +18,7 @@ registerPicker("buy",{
   onAdd: id => { if(!B().prices[id]) B().prices[id]=String(itemBuyPrice(id)||""); },
   afterFields: id => `<div class="pick-fields" style="padding-bottom:6px">
       <label class="fld">
-        <input class="num-in" enterkeyhint="done" type="number" inputmode="decimal" min="0" value="${esc(B().prices[id]||"")}"
+        <input class="num-in" type="number" inputmode="decimal" min="0" value="${esc(B().prices[id]||"")}"
                oninput="setBuyPrice('${id}',this.value)">
         <span>₮/${uShort(mainUnitOf(id))}</span></label></div>`,
   lineHTML: id => buyLineText(id),
@@ -93,16 +93,9 @@ export async function saveBuy(){
   const btn=$("buySave"); const label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="Хадгалж байна…"; }
   try{
-    let sup;
-    if(b.supplier==="__person"){
-      const nm=b.supName.trim();
-      let p=db.partners.find(x=>x.kind==="person" && x.name===nm);
-      if(!p){ p={id:uid(),name:nm,reg:"",phone:b.supPhone.trim(),kind:"person"}; db.partners.push(p); save(); }
-      sup={name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id};
-    }else{
-      const p=db.partners.find(x=>x.id===b.supplier);
-      sup={name:p.name,reg:p.reg||"",phone:p.phone||"",type:p.kind==="person"?"person":"org",pid:p.id};
-    }
+    const sup = b.supplier==="__person"
+      ? {name:b.supName.trim(),reg:"",phone:b.supPhone.trim(),type:"person",pid:null}
+      : (p=>({name:p.name,reg:p.reg||"",phone:p.phone||"",type:"org",pid:p.id}))(db.partners.find(x=>x.id===b.supplier));
 
     const ts=tsOfIso(b.date);
     const lines=ids.map(id=>{
