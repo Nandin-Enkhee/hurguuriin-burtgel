@@ -2,7 +2,7 @@
 import { db, state } from './state.js';
 import { esc, num, isoStr, isoMonth, timeStr, dateStr, dayKey, dayKeyOfIso,
          monthKey, monthKeyOfIso, qtyLine, itemName, money, liveItems, workerName,
-         payFor, lQty, lUnit, uShort, stock, fridgeName, mainUnitOf } from './util.js';
+         lQty, lUnit, uShort, stock, fridgeName, mainUnitOf } from './util.js';
 import { $, toast } from './ui.js';
 import { show, registerScreen } from './router.js';
 import { requireOnline } from './auth.js';
@@ -31,30 +31,53 @@ function stockAt(fid,itemId,ts){
   return mainUnitOf(itemId)==="pcs" ? pcs : num(kg);
 }
 
-/* ---------- Барааны түүх ---------- */
+/* ---------- Барааны түүх ----------
+   Он сараар биш, огнооны мужаар: жишээ нь 2026.8.13-аас 2026.8.14 хүртэл. */
 const IH = () => state.itemHist;
+
 export function openItemHist(itemId){
   IH().item=itemId;
-  IH().month = IH().month || isoMonth();
-  $("ihMonth").value=IH().month;
+  const d=DASH().date||isoStr();
+  IH().from = IH().from || d;
+  IH().to   = IH().to   || d;
+  $("ihFrom").value=IH().from; $("ihFrom").max=isoStr();
+  $("ihTo").value=IH().to;     $("ihTo").max=isoStr();
   renderItemHist(); show("scrItemHist");
 }
-export function setItemHistMonth(v){ IH().month = v || isoMonth(); renderItemHist(); }
+export function setItemHistFrom(v){
+  IH().from = v || isoStr();
+  if(IH().to < IH().from){ IH().to=IH().from; $("ihTo").value=IH().to; }
+  renderItemHist();
+}
+export function setItemHistTo(v){
+  IH().to = v || isoStr();
+  if(IH().to < IH().from){ IH().from=IH().to; $("ihFrom").value=IH().from; }
+  renderItemHist();
+}
+function dayStartTs(iso){ return new Date(iso+"T00:00:00").getTime(); }
+function dayEndTs(iso){ return new Date(iso+"T23:59:59.999").getTime(); }
+
 export function renderItemHist(){
   const id=IH().item;
   if(!id){ show("scrDash"); return; }
   $("ihTitle").textContent=itemName(id);
-  const mk=monthKeyOfIso(IH().month||isoMonth());
-  const a=(IH().month||isoMonth()).split("-");
-  const monthStart=new Date(+a[0],+a[1]-1,1).getTime();
+  const u=uShort(mainUnitOf(id));
+  const from=dayStartTs(IH().from), to=dayEndTs(IH().to);
 
+  /* Эхлэх өдрийн эхэн үеийн үлдэгдэл */
   let opening=0;
-  db.fridges.forEach(fr=>{ opening+=stockAt(fr.id,id,monthStart-1); });
+  db.fridges.forEach(fr=>{ opening+=stockAt(fr.id,id,from-1); });
 
-  const rows=db.log.filter(e=>e.item===id && monthKey(e.ts)===mk).sort((a,b)=>a.ts-b.ts);
+  const rows=db.log.filter(e=>e.item===id && e.ts>=from && e.ts<=to).sort((a,b)=>a.ts-b.ts);
+  const label = IH().from===IH().to
+    ? dateStr(new Date(from))
+    : dateStr(new Date(from))+" — "+dateStr(new Date(to));
+
   if(!rows.length){
-    $("ihBody").innerHTML=`<div class="card"><div class="empty">Энэ сард хөдөлгөөн байхгүй.<br>
-      Сарын эхний үлдэгдэл: <b>${num(opening)} ${uShort(mainUnitOf(id))}</b></div></div>`;
+    $("ihBody").innerHTML=`<div class="card"><h3>${label}</h3>
+      <div class="item-row"><span class="item-name">Эхний үлдэгдэл</span>
+        <span class="item-val">${num(opening)} ${u}</span></div>
+      <div class="empty">Энэ хугацаанд хөдөлгөөн байхгүй</div></div>`;
     return;
   }
   let run=num(opening), tin=0, tout=0;
@@ -72,15 +95,14 @@ export function renderItemHist(){
       <td class="amt">${run}</td></tr>`;
   }).join("");
 
-  $("ihBody").innerHTML=`<div class="card">
-    <h3>${a[0]} оны ${+a[1]}-р сар</h3>
-    <div class="item-row"><span class="item-name">Сарын эхэнд</span>
-      <span class="item-val">${num(opening)} ${uShort(mainUnitOf(id))}</span></div>
+  $("ihBody").innerHTML=`<div class="card"><h3>${label}</h3>
+    <div class="item-row"><span class="item-name">Эхний үлдэгдэл</span>
+      <span class="item-val">${num(opening)} ${u}</span></div>
     <div class="item-row"><span class="item-name">Орсон</span>
-      <span class="item-val mv-in">+${num(tin)}</span></div>
+      <span class="item-val mv-in">+${num(tin)} ${u}</span></div>
     <div class="item-row"><span class="item-name">Гарсан</span>
-      <span class="item-val mv-out">−${num(tout)}</span></div>
-    <div class="total-line"><span>Сарын эцэст</span><b>${run} ${uShort(mainUnitOf(id))}</b></div>
+      <span class="item-val mv-out">−${num(tout)} ${u}</span></div>
+    <div class="total-line"><span>Эцсийн үлдэгдэл</span><b>${run} ${u}</b></div>
   </div>
   <div class="card"><h3>Хөдөлгөөн бүрээр</h3>
     <div class="tbl-wrap"><table class="tbl" style="min-width:360px">
@@ -184,18 +206,5 @@ export function renderDash(){
   }).join("") : `<div class="empty">Энэ өдөр баримт гараагүй байна</div>`)
   + (gk.length?`<div class="total-line"><span>Борлуулалт</span><b>${money(sold)}</b></div>`:"");
 
-  /* Ажилчдын цалин */
-  const pay={};
-  (db.works||[]).forEach(x=>{
-    if(dayKey(x.ts)!==dk) return;
-    pay[x.worker]=(pay[x.worker]||0)+payFor(x);
-  });
-  const pk=Object.keys(pay);
-  const ptot=pk.reduce((s,k)=>s+pay[k],0);
-  $("dashPay").innerHTML = (pk.length ? pk.map(k=>`
-    <div class="item-row"><span class="item-name">${esc(workerName(k))}</span>
-      <span class="item-val">${money(pay[k])}</span></div>`).join("")
-    : `<div class="empty">Энэ өдөр цалин бодогдоогүй байна</div>`)
-  + (pk.length?`<div class="total-line"><span>Нийт</span><b>${money(ptot)}</b></div>`:"");
 }
 registerScreen("scrDash", renderDash);
