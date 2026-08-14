@@ -26,7 +26,7 @@ function syncSack(v,id){
 function fieldsHTML(ns,id,v){
   const F=(key,label,step,mode,val)=>`
     <label class="fld">
-      <input class="num-in" type="number" inputmode="${mode}" min="0" step="${step}"
+      <input class="num-in" enterkeyhint="done" type="number" inputmode="${mode}" min="0" step="${step}"
              value="${esc(val)}" oninput="pickSet('${ns}','${id}','${key}',this.value)">
       <span>${label}</span>
     </label>`;
