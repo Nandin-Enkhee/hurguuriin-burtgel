@@ -1,51 +1,56 @@
-/* Дэлгэц солих, дахин зурах, буцах түүх.
-   Дэлгэц бүр өөрийгөө бүртгүүлнэ — if/else гинж хэрэггүй. */
-const renderers = {};
+/* Дахин ашиглагддаг UI хэсгүүд: мэдэгдэл, доош унждаг сонголт. */
+import { esc } from './util.js';
+import { closeAllSel } from './router.js';
 
-/* Түр зуурын маягт бүхий дэлгэцүүд түүхэнд хадгалагдахгүй —
-   хадгалсны дараа буцахад хагас бөглөсөн маягт руу орохоос сэргийлнэ. */
-const SKIP = ["scrLogin","scrEntry","scrWork","scrOut","scrBuy","scrReceipt"];
-let stack=[], current=null;
+export const $ = id => document.getElementById(id);
 
-export function registerScreen(id, render){ renderers[id] = render; }
+let toastTimer=null;
+export function toast(msg){
+  const t=$("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2400);
+}
 
-function paint(id){
+/* --- Доош унждаг сонголт ---
+   Бүх дуудлага ижил хэлбэртэй: selectHTML(нэр, сонголтууд, одоогийн, чиглүүлэг)
+   Сонголт хийхэд onChoose[нэр] дуудагдана. */
+export const onChoose = {};
+
+export function selectHTML(name, options, curId, placeholder){
+  const cur=options.find(o=>o.id===curId);
+  const opts = options.length
+    ? options.map(o=>`
+        <button type="button" class="sel-opt${o.id===curId?" on":""}" onclick="chooseSel('${name}','${o.id}')">
+          <span class="tick">✓</span><span>${esc(o.name)}</span>
+        </button>`).join("")
+    : `<div class="empty">Жагсаалт хоосон байна</div>`;
+  return `
+    <button type="button" class="sel-head${cur?"":" ph"}" onclick="toggleSel('${name}')">
+      <span class="sel-val">${cur?esc(cur.name):placeholder}</span><span class="caret">▼</span>
+    </button>
+    <div class="sel-body">${opts}</div>`;
+}
+
+export function toggleSel(name){
+  const el=$("sel_"+name);
+  const was=el.classList.contains("open");
   closeAllSel();
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  const el=document.getElementById(id);
-  if(el) el.classList.add("active");
-  current=id;
-  window.scrollTo(0,0);
+  if(!was){ el.classList.add("open"); window.__openSel=name; }
+}
+export function chooseSel(name,id){
+  closeAllSel();
+  const fn=onChoose[name];
+  if(fn) fn(id);
 }
 
-export function show(id){
-  paint(id);
-  if(SKIP.indexOf(id)<0 && stack[stack.length-1]!==id) stack.push(id);
-}
-/* Түүхэнд нэмэлгүй солино — буцах үед ашиглана */
-export function replace(id){
-  paint(id);
-  if(SKIP.indexOf(id)<0){
-    if(stack[stack.length-1]!==id) stack[stack.length-1]=id;
-  }
-}
-export function goBack(){
-  if(SKIP.indexOf(current)<0) stack.pop();
-  const prev=stack[stack.length-1];
-  if(!prev){ resetHistory(); paint("scrHome"); stack=["scrHome"]; }
-  else paint(prev);
-  const fn=renderers[stack[stack.length-1]||"scrHome"];
-  if(fn) fn();
-}
-export function resetHistory(){ stack=[]; }
-export function activeScreen(){ return current; }
+/* Гадна талд дархад нээлттэй сонголтыг хаана */
+document.addEventListener("click", e=>{
+  if(window.__openSel && e.target.closest && !e.target.closest(".sel")) closeAllSel();
+});
 
-/* Сервер талаас өгөгдөл ирэхэд идэвхтэй дэлгэцийг л шинэчилнэ. */
-export function refreshActive(){
-  const fn = current && renderers[current];
-  if(fn) fn();
-}
-export function closeAllSel(){
-  document.querySelectorAll(".sel").forEach(s=>s.classList.remove("open"));
-  window.__openSel=null;
+/* Байгууллага сонгох нийтлэг жагсаалт — Гаргах, Худалдан авах хоёрт ижил */
+export function orgOptions(partners){
+  return partners.map(p=>({id:p.id,name:p.name}))
+    .concat([{id:"__person",name:"Хувь хүн"},{id:"__addorg",name:"＋ Шинэ байгууллага нэмэх"}]);
 }
