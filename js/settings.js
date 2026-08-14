@@ -180,34 +180,58 @@ export function setRate(wid,iid,v){
 }
 
 /* ---------- Харилцагч ----------
-   Байгууллага, хувь хүн хоёр тусдаа жагсаалттай. Гаргах, Худалдан авах
-   дэлгэц дээр шинээр бичсэн хувь хүн эндээ өөрөө нэмэгдэж, эндээсээ
-   устгагдана. Устгасан ч хуучин баримт хэвээр үлдэнэ. */
-export function openPartners(){ renderPartners(); show("scrPartners"); }
+   Байгууллага, хувь хүн хоёр тусдаа бүлэг. Нэр дээр нь дарвал доошоо
+   задарч, тэндээсээ шинийг нэмэх, хуучныг хасах боломжтой.
+   Гаргах, Худалдан авах дээр шинээр бичсэн хувь хүн энд өөрөө орж ирнэ. */
+export function openPartners(){ state.partyOpen=null; renderPartners(); show("scrPartners"); }
+export function togglePartyGroup(k){
+  state.partyOpen = state.partyOpen===k ? null : k;
+  renderPartners();
+}
+
+function groupHead(key,title,count,open){
+  return `<button type="button" class="exp-head" onclick="togglePartyGroup('${key}')">
+    <span class="exp-arrow">${open?"▾":"▸"}</span>
+    <span class="exp-main">${title}<small>${count} бүртгэлтэй</small></span>
+    <span class="exp-val">${open?"":"›"}</span></button>`;
+}
+
 export function renderPartners(){
   db.persons = db.persons || [];
-  $("partnersEdit").innerHTML = db.partners.length ? db.partners.map(p=>`
-    <div class="edit-row"><span class="nm">${esc(p.name)}
-      ${(p.reg||p.phone)?`<small>${esc([p.reg,p.phone].filter(Boolean).join(" · "))}</small>`:""}</span>
-      <button class="icon-btn" onclick="delPartner('${p.id}')">Хасах</button></div>`).join("")
-    : `<div class="empty">Байгууллага нэмээгүй байна</div>`;
-  renderPersons();
-}
-export function renderPersons(){
-  const box=$("personsEdit");
-  if(!box) return;
-  const list=db.persons||[];
-  box.innerHTML = list.length ? list.map(p=>`
-    <div class="edit-row"><span class="nm">${esc(p.name)}
-      ${p.phone?`<small>${esc(p.phone)}</small>`:""}</span>
-      <button class="icon-btn" onclick="delPerson('${p.id}')">Хасах</button></div>`).join("")
-    : `<div class="empty">Хувь хүн нэмээгүй байна.<br>Гаргах дээр бичсэн хүн энд өөрөө нэмэгдэнэ.</div>`;
+  const open=state.partyOpen;
+  let h=groupHead("org","Байгууллага",db.partners.length,open==="org");
+  if(open==="org"){
+    h+=`<div class="exp-body">`;
+    h+= db.partners.length ? db.partners.map(p=>`
+      <div class="edit-row"><span class="nm">${esc(p.name)}
+        ${(p.reg||p.phone)?`<small>${esc([p.reg,p.phone].filter(Boolean).join(" · "))}</small>`:""}</span>
+        <button class="icon-btn" onclick="delPartner('${p.id}')">Хасах</button></div>`).join("")
+      : `<div class="empty">Байгууллага нэмээгүй байна</div>`;
+    h+=`<div class="add-row" style="display:block;margin-top:12px">
+      <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px">
+      <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px">
+      <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
+      <button class="btn btn-in btn-sm" onclick="addPartner()">Нэмэх</button></div></div>`;
+  }
+  h+=groupHead("person","Хувь хүн",db.persons.length,open==="person");
+  if(open==="person"){
+    h+=`<div class="exp-body">`;
+    h+= db.persons.length ? db.persons.map(p=>`
+      <div class="edit-row"><span class="nm">${esc(p.name)}
+        ${p.phone?`<small>${esc(p.phone)}</small>`:""}</span>
+        <button class="icon-btn" onclick="delPerson('${p.id}')">Хасах</button></div>`).join("")
+      : `<div class="empty">Хувь хүн нэмээгүй байна.<br>Гаргах дээр бичсэн хүн энд өөрөө нэмэгдэнэ.</div>`;
+    h+=`<div class="add-row" style="display:block;margin-top:12px">
+      <input type="text" id="npPersonName" placeholder="Хувь хүний нэр" style="width:100%;margin-bottom:9px">
+      <input type="tel"  id="npPersonPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
+      <button class="btn btn-in btn-sm" onclick="addPerson()">Нэмэх</button></div></div>`;
+  }
+  $("partyBox").innerHTML=h;
 }
 export function addPartner(){
   const n=$("npName").value.trim();
   if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
   db.partners.push({id:uid(),name:n,reg:$("npReg").value.trim(),phone:$("npPhone").value.trim()});
-  $("npName").value=""; $("npReg").value=""; $("npPhone").value="";
   save(); renderPartners(); toast(n+" нэмэгдлээ");
 }
 export function delPartner(id){
@@ -220,11 +244,9 @@ export function addPerson(){
   const n=$("npPersonName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
   db.persons=db.persons||[];
-  const same=db.persons.find(x=>x.name.toLowerCase()===n.toLowerCase());
-  if(same){ toast(n+" аль хэдийн бүртгэлтэй байна"); return; }
+  if(db.persons.some(x=>x.name.toLowerCase()===n.toLowerCase())){ toast(n+" аль хэдийн бүртгэлтэй байна"); return; }
   db.persons.push({id:uid(),name:n,phone:$("npPersonPhone").value.trim()});
-  $("npPersonName").value=""; $("npPersonPhone").value="";
-  save(); renderPersons(); toast(n+" нэмэгдлээ");
+  save(); renderPartners(); toast(n+" нэмэгдлээ");
 }
 export function delPerson(id){
   const p=(db.persons||[]).find(x=>x.id===id);
@@ -232,11 +254,11 @@ export function delPerson(id){
   const used = db.receipts.some(r=>r.buyer && r.buyer.pid===id)
             || db.purchases.some(x=>x.supplier && x.supplier.pid===id);
   const msg = used
-    ? p.name+" -г жагсаалтаас хасах уу?\nӨмнө нь гарсан баримт, өглөг авлага хэвээр үлдэнэ."
+    ? p.name+" -г жагсаалтаас хасах уу?\nӨмнө гарсан баримт, өглөг авлага хэвээр үлдэнэ."
     : p.name+" -г хасах уу?";
   if(!confirm(msg)) return;
   db.persons=db.persons.filter(x=>x.id!==id);
-  save(); renderPersons(); toast("Хаслаа");
+  save(); renderPartners(); toast("Хаслаа");
 }
 
 /* ---------- Байгууллагын мэдээлэл ---------- */
