@@ -219,25 +219,16 @@ export function saveCompany(){
 }
 
 /* ---------- Код ---------- */
-export function openCodes(){
-  $("pinWorker").value=db.pin; $("pinAdmin").value=db.adminPin; $("pinBackup").value=db.backupPin;
-  show("scrCodes");
-}
+export function openCodes(){ $("pinWorker").value=db.pin; $("pinAdmin").value=db.adminPin; show("scrCodes"); }
 export function savePins(){
-  const p=$("pinWorker").value.trim(), a=$("pinAdmin").value.trim(), bk=$("pinBackup").value.trim();
-  if(!/^\d{4}$/.test(p)||!/^\d{4}$/.test(a)||!/^\d{4}$/.test(bk)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
-  if(p===a){ toast("Нэвтрэх хоёр код өөр байх ёстой"); return; }
-  db.pin=p; db.adminPin=a; db.backupPin=bk; save(); toast("Код солигдлоо");
+  const p=$("pinWorker").value.trim(), a=$("pinAdmin").value.trim();
+  if(!/^\d{4}$/.test(p)||!/^\d{4}$/.test(a)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
+  if(p===a){ toast("Хоёр код өөр байх ёстой"); return; }
+  db.pin=p; db.adminPin=a; save(); toast("Код солигдлоо");
 }
 
 /* ---------- Нөөцлөх ---------- */
-export function openBackup(){
-  const v=prompt("Нөөцлөх кодоо оруулна уу");
-  if(v===null) return;
-  if(v.trim()!==db.backupPin){ toast("Код буруу байна"); return; }
-  $("bkText").value=JSON.stringify(db);
-  show("scrBackup");
-}
+export function openBackup(){ $("bkText").value=JSON.stringify(db); show("scrBackup"); }
 export function copyBackup(){
   const t=$("bkText"); t.select(); t.setSelectionRange(0,999999);
   try{ document.execCommand("copy"); toast("Хуулагдлаа"); }
