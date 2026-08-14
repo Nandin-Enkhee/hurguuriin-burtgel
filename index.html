@@ -100,7 +100,6 @@
   <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
   <div class="card"><h3>Тэр өдөр гарсан</h3><div id="dashOut"></div></div>
   <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
-  <div class="card"><h3>Ажилчдын цалин</h3><div id="dashPay"></div></div>
   <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
 </div>
 
@@ -108,8 +107,11 @@
 <div class="screen" id="scrItemHist">
   <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
   <div class="card">
-    <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="ihMonth" onchange="setItemHistMonth(this.value)">
+    <h3>Хугацаа</h3>
+    <p class="label">Эхлэх огноо</p>
+    <input type="date" class="date-in" id="ihFrom" onchange="setItemHistFrom(this.value)">
+    <p class="label" style="margin-top:12px">Дуусах огноо</p>
+    <input type="date" class="date-in" id="ihTo" onchange="setItemHistTo(this.value)">
   </div>
   <div id="ihBody"></div>
 </div>
