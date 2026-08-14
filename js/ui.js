@@ -49,9 +49,25 @@ document.addEventListener("click", e=>{
   if(window.__openSel && e.target.closest && !e.target.closest(".sel")) closeAllSel();
 });
 
-/* Байгууллага сонгох нийтлэг жагсаалт — Гаргах, Худалдан авах хоёрт ижил */
+/* Хүлээн авагч/нийлүүлэгч сонголт — эхлээд "Хувь хүн" эсвэл "Байгууллага"
+   ангилал сонгуулаад, дараа нь тухайн ангиллын жагсаалтыг харуулна.
+   Гаргах, Худалдан авах хоёрт ижил ашиглагдана. */
 export function orgOptions(partners){
-  return [{id:"__person",name:"Хувь хүн"}]
-    .concat(partners.map(p=>({id:p.id,name:p.name})))
-    .concat([{id:"__addorg",name:"＋ Шинэ байгууллага нэмэх"}]);
+  return [{id:"__addorg",name:"＋ Шинэ байгууллага нэмэх"}]
+    .concat(partners.map(p=>({id:p.id,name:p.name})));
+}
+export function personOptions(persons){
+  return [{id:"__addperson",name:"＋ Шинэ хувь хүн нэмэх"}]
+    .concat(persons.map(p=>({id:p.id,name:p.name})));
+}
+/* kind: null (ангилал сонгоогүй), "person", "org" */
+export function partyOptions(kind, orgs, persons){
+  if(kind==="person") return [{id:"__back",name:"◀ Ангилал солих"}].concat(personOptions(persons));
+  if(kind==="org")    return [{id:"__back",name:"◀ Ангилал солих"}].concat(orgOptions(orgs));
+  return [{id:"__kind_person",name:"Хувь хүн"},{id:"__kind_org",name:"Байгууллага"}];
+}
+export function partyPlaceholder(kind){
+  if(kind==="person") return "Хувь хүн сонгоно уу";
+  if(kind==="org")    return "Байгууллага сонгоно уу";
+  return "Хувь хүн эсвэл байгууллага";
 }
