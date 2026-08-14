@@ -1,51 +1,84 @@
-/* Дэлгэц солих, дахин зурах, буцах түүх.
-   Дэлгэц бүр өөрийгөө бүртгүүлнэ — if/else гинж хэрэггүй. */
-const renderers = {};
+/* Нэвтрэх ба үндсэн цэс */
+import { db, state } from './state.js';
+import { dateStr, fridgeName } from './util.js';
+import { $, toast } from './ui.js';
+import { show, registerScreen } from './router.js';
+import { syncText, isOnline, onSync } from './sync.js';
 
-/* Түр зуурын маягт бүхий дэлгэцүүд түүхэнд хадгалагдахгүй —
-   хадгалсны дараа буцахад хагас бөглөсөн маягт руу орохоос сэргийлнэ. */
-const SKIP = ["scrLogin","scrEntry","scrWork","scrOut","scrBuy","scrReceipt"];
-let stack=[], current=null;
+let inputs=[];
 
-export function registerScreen(id, render){ renderers[id] = render; }
-
-function paint(id){
-  closeAllSel();
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  const el=document.getElementById(id);
-  if(el) el.classList.add("active");
-  current=id;
-  window.scrollTo(0,0);
+export function initLogin(){
+  inputs=Array.from(document.querySelectorAll(".code-inputs input"));
+  inputs.forEach((input,idx)=>{
+    input.addEventListener("input",()=>{
+      input.value=input.value.replace(/[^0-9]/g,"");
+      if(input.value && idx<inputs.length-1) inputs[idx+1].focus();
+      if(idx===inputs.length-1 && input.value) checkCode();
+    });
+    input.addEventListener("keydown",e=>{
+      if(e.key==="Backspace" && !input.value && idx>0) inputs[idx-1].focus();
+      if(e.key==="Enter") checkCode();
+    });
+  });
+  inputs[0].focus();
 }
 
-export function show(id){
-  paint(id);
-  if(SKIP.indexOf(id)<0 && stack[stack.length-1]!==id) stack.push(id);
-}
-/* Түүхэнд нэмэлгүй солино — буцах үед ашиглана */
-export function replace(id){
-  paint(id);
-  if(SKIP.indexOf(id)<0){
-    if(stack[stack.length-1]!==id) stack[stack.length-1]=id;
+/* Сервертэй холбогдоогүй үед бүх үйлдлийг хаана — хоёр утас
+   зөрүүтэй өгөгдөл дээр ажиллахаас сэргийлнэ. */
+export function applyLock(){
+  const ok=isOnline();
+  const btn=$("loginBtn");
+  if(btn) btn.disabled=!ok;
+  const warn=$("lockWarn");
+  if(warn) warn.style.display = ok ? "none" : "block";
+  document.querySelectorAll("#scrHome .menu .btn").forEach(b=>{ b.disabled=!ok; });
+  const hw=$("homeLock");
+  if(hw) hw.style.display = ok ? "none" : "block";
+  if(!ok && document.querySelector(".screen.active")?.id!=="scrLogin"){
+    /* Холболт тасарвал үндсэн цэс рүү буцаана */
+    state.isAdmin=false;
+    show("scrLogin");
   }
 }
-export function goBack(){
-  if(SKIP.indexOf(current)<0) stack.pop();
-  const prev=stack[stack.length-1];
-  if(!prev){ resetHistory(); paint("scrHome"); stack=["scrHome"]; }
-  else paint(prev);
-  const fn=renderers[stack[stack.length-1]||"scrHome"];
-  if(fn) fn();
-}
-export function resetHistory(){ stack=[]; }
-export function activeScreen(){ return current; }
+onSync(applyLock);
 
-/* Сервер талаас өгөгдөл ирэхэд идэвхтэй дэлгэцийг л шинэчилнэ. */
-export function refreshActive(){
-  const fn = current && renderers[current];
-  if(fn) fn();
+export function requireOnline(){
+  if(isOnline()) return true;
+  toast("Сервертэй холбогдоогүй байна · түр хүлээнэ үү");
+  return false;
 }
-export function closeAllSel(){
-  document.querySelectorAll(".sel").forEach(s=>s.classList.remove("open"));
-  window.__openSel=null;
+
+export function checkCode(){
+  if(!requireOnline()) return;
+  const entered=inputs.map(i=>i.value).join("");
+  if(entered.length<4){ $("errorMsg").textContent="4 оронтой кодоо бүтнээр нь оруулна уу"; return; }
+  if(entered===db.adminPin)     state.isAdmin=true;
+  else if(entered===db.pin)     state.isAdmin=false;
+  else{
+    $("errorMsg").textContent="Код буруу байна";
+    inputs.forEach(i=>i.value=""); inputs[0].focus();
+    return;
+  }
+  $("errorMsg").textContent="";
+  inputs.forEach(i=>i.value="");
+  renderHome(); show("scrHome");
 }
+export function logout(){
+  state.isAdmin=false;
+  show("scrLogin");
+  inputs.forEach(i=>i.value=""); inputs[0].focus();
+}
+
+export function renderHome(){
+  $("homeDate").textContent=dateStr();
+  $("syncLine").textContent=syncText();
+  applyLock();
+  $("btnF1").textContent=fridgeName(1);
+  $("btnF2").textContent=fridgeName(2);
+  const adminOnly = state.isAdmin ? "block" : "none";
+  $("btnDash").style.display=adminOnly;
+  $("btnBuy").style.display=adminOnly;
+  $("btnAdmin").style.display=adminOnly;
+}
+export function goHome(){ renderHome(); show("scrHome"); }
+registerScreen("scrHome", renderHome);
