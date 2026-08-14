@@ -51,6 +51,16 @@ export function pushSettings(){
 /* Тохиргоо өөрчлөгдөх бүрд дуудна */
 export function save(){ saveLocal(); pushSettings(); }
 
+/* Нөөцлөх хэсгийн код — зөвхөн Firebase дээр (app/secure) амьдарна.
+   Утасны санах ойд ч, нөөцийн бичвэрт ч хадгалагдахгүй тул нөөцөө
+   хуулж авсан хүн энэ кодыг олж харахгүй. */
+let backupPin="5555";
+export function getBackupPin(){ return backupPin; }
+export function setBackupPin(v){
+  backupPin=v;
+  fbSet("app","secure",{backupPin:v});
+}
+
 export function startSync(){
   const F=window.FB;
   if(!F||ready) return;
@@ -65,6 +75,12 @@ export function startSync(){
     db.lastIssuer=d.lastIssuer||null; db.lastRecorder=d.lastRecorder||null;
     normalize(); saveLocal(); refreshActive();
   }, e=>{ console.error(e); setSyncState("err"); });
+
+  /* Нөөцлөхийн код — db-д огт хүрэхгүй, зөвхөн энэ хувьсагчид ирнэ */
+  F.onSnapshot(F.doc(F.fs,"app","secure"), snap=>{
+    if(!snap.exists()){ fbSet("app","secure",{backupPin}); return; }
+    backupPin=(snap.data()||{}).backupPin || backupPin;
+  }, e=>console.error(e));
 
   [["items","items"],["workers","workers"],["partners","partners"],["persons","persons"]].forEach(([doc,field])=>{
     F.onSnapshot(F.doc(F.fs,"app",doc), snap=>{
