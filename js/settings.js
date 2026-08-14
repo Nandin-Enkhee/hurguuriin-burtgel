@@ -5,8 +5,8 @@ import { esc, f, int, money, itemName, workerName, liveItems, liveWorkers,
          payUnitOf, mainUnitOf, uShort, uLabel, rateOf, fridgeName } from './util.js';
 import { $, toast, selectHTML, onChoose } from './ui.js';
 import { show } from './router.js';
-import { save, fbSet, fbDel, pushSettings } from './sync.js';
-import { renderHome } from './auth.js';
+import { save, fbSet, fbDel, pushSettings, getBackupPin, setBackupPin } from './sync.js';
+import { renderHome, requireOnline } from './auth.js';
 
 export function openAdmin(){
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
@@ -286,8 +286,24 @@ export function savePins(){
   db.pin=p; db.adminPin=a; save(); toast("Код солигдлоо");
 }
 
-/* ---------- Нөөцлөх ---------- */
-export function openBackup(){ $("bkText").value=JSON.stringify(db); show("scrBackup"); }
+/* ---------- Нөөцлөх ----------
+   Энэ хэсэгт бүх мэдээлэл ил гарах бөгөөд устгах товч ч бий тул
+   тусдаа кодоор хамгаална. Код нь зөвхөн Firebase дээр байдаг. */
+export function openBackup(){
+  if(!requireOnline()) return;
+  const v=prompt("Нөөцлөх хэсгийн код");
+  if(v===null) return;
+  if(v.trim()!==getBackupPin()){ toast("Код буруу байна"); return; }
+  $("bkText").value=JSON.stringify(db); show("scrBackup");
+}
+export function changeBackupPin(){
+  if(!requireOnline()) return;
+  const v=prompt("Шинэ код — 4 оронтой тоо", getBackupPin());
+  if(v===null) return;
+  const n=v.trim();
+  if(!/^\d{4}$/.test(n)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
+  setBackupPin(n); toast("Код солигдлоо");
+}
 export function copyBackup(){
   const t=$("bkText"); t.select(); t.setSelectionRange(0,999999);
   try{ document.execCommand("copy"); toast("Хуулагдлаа"); }
