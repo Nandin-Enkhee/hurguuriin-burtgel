@@ -21,7 +21,7 @@ export function defaults(){
       itemDefaults("Гэдэс",      "sack")
     ],
     workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
-    partners:[], receipts:[], purchases:[], log:[], audits:[],
+    partners:[], persons:[], receipts:[], purchases:[], log:[], audits:[],
     settlements:[], wagepays:[], works:[]
   };
 }
@@ -42,6 +42,7 @@ export function replaceDb(next){
 
 export function normalize(){
   db.partners   = db.partners   || [];
+  db.persons    = db.persons    || [];   /* Гаргах, Худалдан авахад бичсэн хувь хүмүүс */
   db.receipts   = db.receipts   || [];
   db.purchases  = db.purchases  || [];
   db.audits     = db.audits     || [];
