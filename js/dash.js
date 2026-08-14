@@ -63,7 +63,7 @@ export function renderItemHist(){
     const isIn = e.action==="in";
     run = num(run + (isIn?q:-q));
     if(isIn) tin+=q; else tout+=q;
-    const src = isIn ? (e.purchase?"Гаднаас авсан":("Оруулсан"+(e.worker?" · "+workerName(e.worker):"")))
+    const src = isIn ? (e.purchase?"Гаднаас авсан":("Оруулсан"+(e.by?" · "+workerName(e.by):"")))
                      : (e.receipt?"Гаргасан · баримттай":"Гаргасан");
     return `<tr>
       <td class="dim">${dateStr(new Date(e.ts))}<div class="dim">${timeStr(new Date(e.ts))}</div></td>
@@ -186,9 +186,9 @@ export function renderDash(){
 
   /* Ажилчдын цалин */
   const pay={};
-  db.log.forEach(e=>{
-    if(e.action!=="in" || !e.worker || dayKey(e.ts)!==dk) return;
-    pay[e.worker]=(pay[e.worker]||0)+payFor(e);
+  (db.works||[]).forEach(x=>{
+    if(dayKey(x.ts)!==dk) return;
+    pay[x.worker]=(pay[x.worker]||0)+payFor(x);
   });
   const pk=Object.keys(pay);
   const ptot=pk.reduce((s,k)=>s+pay[k],0);
