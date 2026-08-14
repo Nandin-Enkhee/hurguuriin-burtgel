@@ -354,7 +354,7 @@
     <button class="btn" onclick="openFridgeItems()">Хөргүүрийн ангилал</button>
     <button class="btn" onclick="openWorkers()">Ажилчид</button>
     <button class="btn" onclick="openRates()">Цалингийн тариф</button>
-    <button class="btn" onclick="openPartners()">Харилцагч байгууллага</button>
+    <button class="btn" onclick="openPartners()">Харилцагч · хувь хүн</button>
     <button class="btn" onclick="openCompany()">Байгууллагын мэдээлэл</button>
     <button class="btn" onclick="openCodes()">Нэвтрэх код</button>
     <button class="btn" onclick="openBackup()">Нөөцлөх</button>
@@ -414,15 +414,25 @@
 </div>
 
 <div class="screen" id="scrPartners">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч байгууллага</h2></div>
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч</h2></div>
   <div class="card">
-    <h3>Байнга ажилладаг харилцагчид</h3>
+    <h3>Байгууллага</h3>
     <div class="scroll-box" style="max-height:40vh" id="partnersEdit"></div>
     <div class="add-row" style="display:block">
       <input type="text" id="npName" placeholder="Байгууллагын нэр" style="width:100%;margin-bottom:9px">
       <input type="text" id="npReg" placeholder="Регистрийн дугаар" style="width:100%;margin-bottom:9px">
       <input type="tel"  id="npPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
       <button class="btn btn-in btn-sm" onclick="addPartner()">Нэмэх</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Хувь хүн</h3>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Гаргах, худалдан авах дээр бичсэн хүн энд өөрөө нэмэгдэнэ</p>
+    <div class="scroll-box" style="max-height:40vh" id="personsEdit"></div>
+    <div class="add-row" style="display:block">
+      <input type="text" id="npPersonName" placeholder="Хувь хүний нэр" style="width:100%;margin-bottom:9px">
+      <input type="tel"  id="npPersonPhone" placeholder="Утас" style="width:100%;margin-bottom:12px">
+      <button class="btn btn-in btn-sm" onclick="addPerson()">Нэмэх</button>
     </div>
   </div>
 </div>
