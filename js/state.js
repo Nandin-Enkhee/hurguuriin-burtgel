@@ -21,7 +21,7 @@ export function defaults(){
       itemDefaults("Гэдэс",      "sack")
     ],
     workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
-    partners:[], receipts:[], purchases:[], log:[], audits:[], settlements:[], wagepays:[]
+    partners:[], persons:[], receipts:[], purchases:[], log:[], audits:[], settlements:[], wagepays:[]
   };
 }
 function itemDefaults(name,track){
@@ -41,6 +41,7 @@ export function replaceDb(next){
 
 export function normalize(){
   db.partners   = db.partners   || [];
+  db.persons    = db.persons    || [];
   db.receipts   = db.receipts   || [];
   db.purchases  = db.purchases  || [];
   db.audits     = db.audits     || [];
@@ -96,8 +97,8 @@ export const state = {
   isAdmin:false,
   curFridge:1,
   entry:{ items:{}, workers:[], split:{}, date:null },
-  cart:{ partner:null, personName:"", personPhone:"", issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
-  buy:{ date:null, fridge:1, supplier:null, supName:"", supPhone:"", items:{}, prices:{} },
+  cart:{ partner:null, partnerKind:null, issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
+  buy:{ date:null, fridge:1, supplier:null, supplierKind:null, items:{}, prices:{} },
   salary:{ period:"day", open:null, date:null, month:null },
   records:{ month:null, fridge:1, openDay:null },
   itemHist:{ item:null, month:null },
