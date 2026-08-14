@@ -24,7 +24,7 @@ export function renderItems(){
     const trackOpts=[["kg","Зөвхөн кг"],["pcs","Зөвхөн ширхэг"],["both","Кг ба ширхэг"],["sack","Шуудайгаар"]];
     return `<div class="item-cfg">
       <div class="edit-row" style="border:none;padding:0">
-        <input type="text" value="${esc(it.name)}" onchange="setItemName('${it.id}',this.value)">
+        <input enterkeyhint="done" type="text" value="${esc(it.name)}" onchange="setItemName('${it.id}',this.value)">
         <button class="icon-btn" onclick="delItem('${it.id}')">Хасах</button>
       </div>
       <div class="cfg-row"><span class="cl">Юугаар бүртгэх</span>
@@ -32,17 +32,17 @@ export function renderItems(){
           ${trackOpts.map(o=>`<option value="${o[0]}"${tr===o[0]?" selected":""}>${o[1]}</option>`).join("")}
         </select></div>
       ${tr==="sack"?`<div class="cfg-row"><span class="cl">1 шуудайд (ширхэг)</span>
-        <input class="opt-sel" style="max-width:120px;text-align:right" type="number" inputmode="numeric" min="0" step="1"
+        <input class="opt-sel" enterkeyhint="done" style="max-width:120px;text-align:right" type="number" inputmode="numeric" min="0" step="1"
                value="${it.perSack||0}" onchange="setPerSack('${it.id}',this.value)"></div>`:""}
       <div class="cfg-row"><span class="cl">Цалин бодох нэгж</span>
         <select class="opt-sel" onchange="setPayUnit('${it.id}',this.value)">
           ${payOpts.map(o=>`<option value="${o[0]}"${pu===o[0]?" selected":""}>${o[1]}</option>`).join("")}
         </select></div>
       <div class="cfg-row"><span class="cl">Борлуулах үнэ (₮/${uShort(mu)})</span>
-        <input class="opt-sel" style="max-width:130px;text-align:right" type="number" inputmode="decimal"
+        <input class="opt-sel" enterkeyhint="done" style="max-width:130px;text-align:right" type="number" inputmode="decimal"
                value="${it.price||0}" onchange="setItemPrice('${it.id}',this.value)"></div>
       <div class="cfg-row"><span class="cl">Гаднаас авах үнэ (₮/${uShort(mu)})</span>
-        <input class="opt-sel" style="max-width:130px;text-align:right" type="number" inputmode="decimal"
+        <input class="opt-sel" enterkeyhint="done" style="max-width:130px;text-align:right" type="number" inputmode="decimal"
                value="${it.buyPrice||0}" onchange="setItemBuyPrice('${it.id}',this.value)"></div>
     </div>`;
   }).join("") : `<div class="empty">Бараа нэмээгүй байна</div>`;
@@ -116,13 +116,13 @@ export function renderWorkers(){
     const fixed=w.payType==="fixed";
     return `<div class="item-cfg">
       <div class="edit-row" style="border:none;padding:0">
-        <input type="text" value="${esc(w.name)}" onchange="setWorkerName('${w.id}',this.value)">
+        <input enterkeyhint="done" type="text" value="${esc(w.name)}" onchange="setWorkerName('${w.id}',this.value)">
         <button class="icon-btn" onclick="delWorker('${w.id}')">Хасах</button>
       </div>
       <button type="button" class="check-row${fixed?" on":""}" onclick="toggleWorkerFixed('${w.id}')">
         <span class="tick">✓</span><span>Тогтмол цалинтай</span></button>
       ${fixed?`<div class="cfg-row"><span class="cl">Нэг өдрийн хөлс</span>
-        <input class="opt-sel" style="max-width:150px;text-align:right" type="number" inputmode="decimal"
+        <input class="opt-sel" enterkeyhint="done" style="max-width:150px;text-align:right" type="number" inputmode="decimal"
                value="${w.salary||0}" onchange="setWorkerSalary('${w.id}',this.value)"></div>
       <div class="tbl-note">Ажилласан өдөр тутамд энэ дүн бодогдоно. Урьдчилгаа, олгосон цалинг Цалин хэсгээс бүртгэнэ.</div>`:""}
     </div>`;
@@ -169,7 +169,7 @@ export function pickRateWorker(id){
     : workerName(id)+" — нэгж тутмын хөлс";
   $("ratesEdit").innerHTML = liveItems().map(it=>`
     <div class="edit-row"><span class="nm">${esc(it.name)}<small>₮ / ${uLabel(payUnitOf(it.id))}</small></span>
-      <input type="number" inputmode="decimal" style="max-width:130px" value="${rateOf(id,it.id)}"
+      <input enterkeyhint="done" type="number" inputmode="decimal" style="max-width:130px" value="${rateOf(id,it.id)}"
              onchange="setRate('${id}','${it.id}',this.value)"></div>`).join("")
     || `<div class="empty">Бараа нэмээгүй байна</div>`;
   $("rateCard").style.display="block";
@@ -182,16 +182,33 @@ export function setRate(wid,iid,v){
 /* ---------- Харилцагч ---------- */
 export function openPartners(){ renderPartners(); show("scrPartners"); }
 export function renderPartners(){
-  $("partnersEdit").innerHTML = db.partners.length ? db.partners.map(p=>`
-    <div class="edit-row"><span class="nm">${esc(p.name)}
+  const row=p=>`<div class="edit-row"><span class="nm">${esc(p.name)}
       ${(p.reg||p.phone)?`<small>${esc([p.reg,p.phone].filter(Boolean).join(" · "))}</small>`:""}</span>
-      <button class="icon-btn" onclick="delPartner('${p.id}')">Хасах</button></div>`).join("")
-    : `<div class="empty">Харилцагч нэмээгүй байна</div>`;
+      <button class="icon-btn" onclick="delPartner('${p.id}')">Хасах</button></div>`;
+  const orgs=db.partners.filter(p=>p.kind!=="person");
+  const people=db.partners.filter(p=>p.kind==="person");
+  let h="";
+  h+=`<div class="grp-head">Байгууллага</div>`;
+  h+= orgs.length ? orgs.map(row).join("") : `<div class="empty">Байгууллага нэмээгүй байна</div>`;
+  h+=`<div class="grp-head">Хувь хүн</div>`;
+  h+= people.length ? people.map(row).join("") : `<div class="empty">Хувь хүн бүртгэгдээгүй байна</div>`;
+  $("partnersEdit").innerHTML=h;
+}
+/* Шинэ харилцагч нэмэх — байгууллага эсвэл хувь хүн */
+export function setPartnerKind(k,btn){
+  state.partnerKind=k;
+  document.querySelectorAll("#npSeg button").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  $("npReg").style.display = k==="org" ? "block" : "none";
+  $("npName").placeholder = k==="org" ? "Байгууллагын нэр" : "Хувь хүний нэр";
 }
 export function addPartner(){
   const n=$("npName").value.trim();
-  if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
-  db.partners.push({id:uid(),name:n,reg:$("npReg").value.trim(),phone:$("npPhone").value.trim()});
+  const kind=state.partnerKind||"org";
+  if(!n){ toast(kind==="org"?"Байгууллагын нэрийг бичнэ үү":"Хувь хүний нэрийг бичнэ үү"); return; }
+  db.partners.push({id:uid(),name:n,kind,
+    reg: kind==="org" ? $("npReg").value.trim() : "",
+    phone:$("npPhone").value.trim()});
   $("npName").value=""; $("npReg").value=""; $("npPhone").value="";
   save(); renderPartners(); toast(n+" нэмэгдлээ");
 }
@@ -228,7 +245,19 @@ export function savePins(){
 }
 
 /* ---------- Нөөцлөх ---------- */
-export function openBackup(){ $("bkText").value=JSON.stringify(db); show("scrBackup"); }
+/* Нөөцлөх хэсэгт бүх өгөгдөл ил гардаг тул админ кодоор дахин баталгаажуулна */
+export function openBackup(){
+  $("bkPin").value="";
+  $("bkGate").style.display="block";
+  $("bkPanel").style.display="none";
+  show("scrBackup");
+}
+export function unlockBackup(){
+  if($("bkPin").value.trim()!==db.adminPin){ toast("Код буруу байна"); $("bkPin").value=""; return; }
+  $("bkGate").style.display="none";
+  $("bkPanel").style.display="block";
+  $("bkText").value=JSON.stringify(db);
+}
 export function copyBackup(){
   const t=$("bkText"); t.select(); t.setSelectionRange(0,999999);
   try{ document.execCommand("copy"); toast("Хуулагдлаа"); }
