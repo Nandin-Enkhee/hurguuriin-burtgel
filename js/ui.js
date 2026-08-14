@@ -44,6 +44,32 @@ export function chooseSel(name,id){
   if(fn) fn(id);
 }
 
+/* --- Олон сонголт хийдэг dropdown ---
+   Ижил "sel" гадаад төрхтэй, гэхдээ сонголт хийхэд хаагдахгүй, олон
+   зүйл дараалан тэмдэглэх боломжтой. Толгой хэсэгт сонгосон бүх нэр
+   таслалаар харагдана. */
+export const onMultiChoose = {};
+export function toggleMultiSel(name,id){
+  const fn=onMultiChoose[name];
+  if(fn) fn(id);
+}
+export function multiSelectHTML(name, options, selectedIds, placeholder, emptyHTML){
+  const selSet=new Set(selectedIds||[]);
+  const selNames=options.filter(o=>selSet.has(o.id)).map(o=>o.name);
+  const label=selNames.length ? selNames.join(", ") : placeholder;
+  const opts=options.length
+    ? options.map(o=>`
+        <button type="button" class="sel-opt${selSet.has(o.id)?" on":""}" onclick="toggleMultiSel('${name}','${o.id}')">
+          <span class="tick">✓</span><span>${esc(o.name)}</span>
+        </button>`).join("")
+    : `<div class="empty">${emptyHTML||"Жагсаалт хоосон байна"}</div>`;
+  return `
+    <button type="button" class="sel-head${selNames.length?"":" ph"}" onclick="toggleSel('${name}')">
+      <span class="sel-val">${esc(label)}</span><span class="caret">▼</span>
+    </button>
+    <div class="sel-body">${opts}</div>`;
+}
+
 /* Гадна талд дархад нээлттэй сонголтыг хаана */
 document.addEventListener("click", e=>{
   if(window.__openSel && e.target.closest && !e.target.closest(".sel")) closeAllSel();
