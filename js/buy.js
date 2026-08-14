@@ -64,8 +64,12 @@ export function addSupplierInline(){
 export function addSupplierPersonInline(){
   const n=$("bpName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
-  const p={id:uid(),name:n,phone:$("bpPhone").value.trim()};
-  db.persons.push(p); save();
+  db.persons=db.persons||[];
+  const p=db.persons.find(x=>x.name.toLowerCase()===n.toLowerCase())
+       || {id:uid(),name:n,phone:$("bpPhone").value.trim()};
+  if(db.persons.indexOf(p)<0) db.persons.push(p);
+  else if(!p.phone) p.phone=$("bpPhone").value.trim();
+  save();
   $("bpName").value=""; $("bpPhone").value="";
   B().supplier=p.id; B().supplierKind="person"; renderBuy();
   toast(n+" нэмэгдэж сонгогдлоо");
