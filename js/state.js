@@ -75,6 +75,7 @@ export function normalize(){
     }
     delete w.hasAdvance; delete w.advance;
   });
+  db.partners.forEach(p=>{ if(!p.kind) p.kind="org"; });
   db.receipts.forEach(r=>{ if(r.paid==null) r.paid=false; });
   db.purchases.forEach(p=>{ if(p.paid==null) p.paid=false; });
 }
@@ -108,6 +109,7 @@ export const state = {
   dash:{ date:null, openOrg:null },
   debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
+  partnerKind:"org",
   fiFridge:1,
   receipt:{ backTo:"scrFridge", current:null },
   busy:{ entry:false, buy:false, receipt:false, work:false }
