@@ -104,7 +104,7 @@ export const state = {
   salary:{ period:"day", open:null, date:null, month:null },
   records:{ month:null, fridge:1, openDay:null },
   matrix:{ month:null },
-  itemHist:{ item:null, month:null },
+  itemHist:{ item:null, from:null, to:null },
   dash:{ date:null, openOrg:null },
   debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
