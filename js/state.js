@@ -8,7 +8,7 @@ export function uid(){ return Math.random().toString(36).slice(2,9); }
 
 export function defaults(){
   return {
-    pin:"1234", adminPin:"9999", backupPin:"5555", lastIssuer:null, receiptNo:0, purchaseNo:0,
+    pin:"1234", adminPin:"9999", lastIssuer:null, lastRecorder:null, receiptNo:0, purchaseNo:0,
     company:{ name:"Дэлгэрэх Төв ХХК", phone:"", reg:"", bank:"", account:"", accountName:"" },
     fridges:[{id:1,name:"1-р хөргүүр"},{id:2,name:"2-р хөргүүр"}],
     items:[
@@ -21,7 +21,8 @@ export function defaults(){
       itemDefaults("Гэдэс",      "sack")
     ],
     workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
-    partners:[], persons:[], receipts:[], purchases:[], log:[], audits:[], settlements:[], wagepays:[]
+    partners:[], receipts:[], purchases:[], log:[], audits:[],
+    settlements:[], wagepays:[], works:[]
   };
 }
 function itemDefaults(name,track){
@@ -41,18 +42,17 @@ export function replaceDb(next){
 
 export function normalize(){
   db.partners   = db.partners   || [];
-  db.persons    = db.persons    || [];
   db.receipts   = db.receipts   || [];
   db.purchases  = db.purchases  || [];
   db.audits     = db.audits     || [];
   db.log        = db.log        || [];
   db.settlements= db.settlements|| [];
   db.wagepays   = db.wagepays   || [];
+  db.works      = db.works      || [];
   db.items      = db.items      || [];
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
   db.purchaseNo = db.purchaseNo || 0;
-  if(!db.backupPin) db.backupPin="5555";
   db.company    = Object.assign({}, defaults().company, db.company || {});
   db.fridges    = (db.fridges && db.fridges.length) ? db.fridges : defaults().fridges;
 
@@ -97,16 +97,18 @@ export function loadLocal(){
 export const state = {
   isAdmin:false,
   curFridge:1,
-  entry:{ items:{}, workers:[], split:{}, date:null },
-  cart:{ partner:null, partnerKind:null, issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
-  buy:{ date:null, fridge:1, supplier:null, supplierKind:null, items:{}, prices:{} },
+  entry:{ items:{}, recorder:null, date:null },
+  work:{ items:{}, worker:null, date:null },
+  cart:{ partner:null, personName:"", personPhone:"", issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
+  buy:{ date:null, fridge:1, supplier:null, supName:"", supPhone:"", items:{}, prices:{} },
   salary:{ period:"day", open:null, date:null, month:null },
   records:{ month:null, fridge:1, openDay:null },
+  matrix:{ month:null },
   itemHist:{ item:null, month:null },
   dash:{ date:null, openOrg:null },
   debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
   fiFridge:1,
   receipt:{ backTo:"scrFridge", current:null },
-  busy:{ entry:false, buy:false, receipt:false }
+  busy:{ entry:false, buy:false, receipt:false, work:false }
 };
