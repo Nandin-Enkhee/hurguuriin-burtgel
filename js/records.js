@@ -112,7 +112,7 @@ function logList(logs){
     const on=selLogs.has(e.id);
     const lb = e.action==="out" ? {t:"Зарлага",c:"var(--rust)"}
              : e.purchase ? {t:"Худалдан авсан",c:"var(--moss)"} : {t:"Орлого",c:"var(--blue)"};
-    const who=e.worker?" · "+workerName(e.worker):"";
+    const who=e.by?" · "+workerName(e.by):(e.worker?" · "+workerName(e.worker):"");
     return `<div class="pick" style="display:flex;align-items:center;gap:6px">
       <button type="button" class="check-row${on?" on":""}" style="flex:1" onclick="toggleLogSel('${e.id}')">
         <span class="tick">✓</span>
