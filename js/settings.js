@@ -324,19 +324,16 @@ export function restoreBackup(){
   toast("Сэргээлээ"); renderHome();
 }
 export function wipeAll(){
-  if(!confirm("Бүх орлого зарлага, баримт, цалингийн бүртгэл устана. Итгэлтэй байна уу?")) return;
+  if(!confirm("Бүх орлого зарлага, баримт устана. Итгэлтэй байна уу?")) return;
   if(!confirm("Дахин баталгаажуулна уу — устгасан бүртгэл сэргэхгүй.")) return;
   const old={ log:db.log.slice(), receipts:db.receipts.slice(),
-              purchases:db.purchases.slice(), audits:db.audits.slice(), settlements:db.settlements.slice(),
-              wagepays:db.wagepays.slice(), works:db.works.slice() };
-  db.log=[]; db.receipts=[]; db.purchases=[]; db.audits=[]; db.settlements=[]; db.wagepays=[]; db.works=[];
+              purchases:db.purchases.slice(), audits:db.audits.slice(), settlements:db.settlements.slice() };
+  db.log=[]; db.receipts=[]; db.purchases=[]; db.audits=[]; db.settlements=[];
   saveLocal(); pushSettings();
   old.log.forEach(e=>fbDel("log",e.id));
   old.receipts.forEach(r=>fbDel("receipts",r.id));
   old.purchases.forEach(p=>fbDel("purchases",p.id));
   old.audits.forEach(a=>fbDel("audits",a.id));
   old.settlements.forEach(x=>fbDel("settlements",x.id));
-  old.wagepays.forEach(x=>fbDel("wagepays",x.id));
-  old.works.forEach(x=>fbDel("works",x.id));
   toast("Бүртгэл цэвэрлэгдлээ");
 }
