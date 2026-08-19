@@ -1,4 +1,4 @@
-/* Хяналтын самбар — өдрийн зураглал */
+
 import { db, state } from './state.js';
 import { esc, num, isoStr, isoMonth, timeStr, dateStr, dayKey, dayKeyOfIso,
          monthKey, monthKeyOfIso, qtyLine, itemName, money, liveItems, workerName,
@@ -20,8 +20,6 @@ export function openDash(){
 export function setDashDate(v){ DASH().date = v || isoStr(); renderDash(); }
 export function toggleDashOrg(k){ DASH().openOrg = DASH().openOrg===k ? null : k; renderDash(); }
 
-/* Тухайн мөч хүртэлх үлдэгдлийг бүх бараагаар нэг удаагийн гүйлтээр гаргана.
-   Бараа бүрд log-ийг дахин уншвал бүртгэл олшрох тусам мэдэгдэхүйц удаашрана. */
 function stockMapAt(ts,fids){
   const map={};
   db.log.forEach(e=>{
@@ -39,8 +37,6 @@ function qtyFromMap(map,itemId){
   return mainUnitOf(itemId)==="pcs" ? c.pcs : num(c.kg);
 }
 
-/* ---------- Барааны түүх ----------
-   Он сараар биш, огнооны мужаар: жишээ нь 2026.8.13-аас 2026.8.14 хүртэл. */
 const IH = () => state.itemHist;
 
 export function openItemHist(itemId){
@@ -72,7 +68,6 @@ export function renderItemHist(){
   const u=uShort(mainUnitOf(id));
   const from=dayStartTs(IH().from), to=dayEndTs(IH().to);
 
-  /* Эхлэх өдрийн эхэн үеийн үлдэгдэл */
   const opening=qtyFromMap(stockMapAt(from-1),id);
 
   const rows=db.log.filter(e=>e.item===id && e.ts>=from && e.ts<=to).sort((a,b)=>a.ts-b.ts);
@@ -121,8 +116,6 @@ registerScreen("scrItemHist", renderItemHist);
 export function renderDash(){
   const dk=dayKeyOfIso(DASH().date||isoStr());
 
-  /* Сонгосон өдрийн эцсийн үлдэгдэл ба тэр өдрийн өмнөх үлдэгдэл.
-     Барааны нэр дээр дарвал тухайн барааны түүх нээгдэнэ. */
   const dayEnd=new Date(DASH().date+"T23:59:59").getTime();
   const dayStart=new Date(DASH().date+"T00:00:00").getTime();
   const beforeMap=stockMapAt(dayStart), afterMap=stockMapAt(dayEnd);
@@ -145,7 +138,6 @@ export function renderDash(){
       }).join("")}</tbody></table></div>`
     : `<div class="empty">Хөргүүрүүд хоосон байна</div>`;
 
-  /* Тухайн өдөр орсон */
   const inn={};
   db.log.forEach(e=>{
     if(e.action!=="in" || dayKey(e.ts)!==dk) return;
@@ -164,7 +156,6 @@ export function renderDash(){
       <span class="item-val mv-in">+${qtyLine(t.wkg+t.bkg,t.wpcs+t.bpcs,k)}</span></div>`;
   }).join("") : `<div class="empty">Энэ өдөр бараа ороогүй байна</div>`;
 
-  /* Тухайн өдөр гарсан */
   const out={};
   db.log.forEach(e=>{
     if(e.action!=="out" || dayKey(e.ts)!==dk) return;
@@ -177,7 +168,6 @@ export function renderDash(){
       <span class="item-val mv-out">−${qtyLine(out[k].kg,out[k].pcs,k)}</span></div>`).join("")
     : `<div class="empty">Энэ өдөр бараа гараагүй байна</div>`;
 
-  /* Хаашаа гарсан — нэг байгууллага нэг мөр, дарвал задарна */
   const rcs=db.receipts.filter(r=>dayKey(r.ts)===dk).sort((a,b)=>b.ts-a.ts);
   const gr={};
   rcs.forEach(r=>{
