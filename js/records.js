@@ -32,15 +32,20 @@ export function setRecFridge(id,btn){
 }
 export function toggleRecDay(dk){ R().openDay = R().openDay===dk ? null : dk; renderRecords(); }
 
-/* Сонгосон сарын эхлэхээс өмнөх бүх хөдөлгөөнийг нэгтгэж эхний үлдэгдэл гаргана */
-function openingStock(fid,itemId,firstTs){
-  let kg=0,pcs=0;
+/* Сонгосон сарын эхлэхээс өмнөх үлдэгдлийг бүх бараагаар нэг удаагийн
+   гүйлтээр гаргана — бараа тус бүрд log-ийг дахин дахин уншихгүй. */
+function openingMap(fid,firstTs,ids){
+  const map={};
+  ids.forEach(id=>{ map[id]={kg:0,pcs:0}; });
   db.log.forEach(e=>{
-    if(e.fridge!==fid || e.item!==itemId || e.ts>=firstTs) return;
+    if(e.fridge!==fid || e.ts>=firstTs) return;
+    const c=map[e.item];
+    if(!c) return;
     const s=e.action==="in"?1:-1;
-    kg+=s*(e.kg||0); pcs+=s*(e.pcs||0);
+    c.kg+=s*(e.kg||0); c.pcs+=s*(e.pcs||0);
   });
-  return {kg:num(kg),pcs:pcs};
+  Object.keys(map).forEach(id=>{ map[id].kg=num(map[id].kg); });
+  return map;
 }
 function qtyOfUnit(kg,pcs,id){ return mainUnitOf(id)==="pcs" ? pcs : num(kg); }
 
@@ -65,13 +70,15 @@ export function renderRecords(){
   });
   const dks=Object.keys(days).sort((a,b)=>days[a].ts-days[b].ts);   /* хуучнаас нь */
 
-  /* Сарын эхний үлдэгдлээс эхэлж өдөр бүрийг дараалан бодно */
-  const running={};
-  liveItems().forEach(it=>{
-    const first=days[dks[0]].ts;
-    const dayStart=new Date(new Date(first).getFullYear(),new Date(first).getMonth(),1).getTime();
-    running[it.id]=openingStock(fid,it.id,dayStart);
-  });
+  /* Сарын эхний үлдэгдлээс эхэлж өдөр бүрийг дараалан бодно.
+     Тохиргооноос хассан бараа ч хуучин бүртгэлдээ үлддэг тул
+     идэвхтэй жагсаалт биш, бодит хөдөлгөөнөөс нь барааны жагсаалт гаргана. */
+  const first=days[dks[0]].ts;
+  const fd=new Date(first);
+  const monthStart=new Date(fd.getFullYear(),fd.getMonth(),1).getTime();
+  const touched={};
+  dks.forEach(dk=>Object.keys(days[dk].items).forEach(id=>{ touched[id]=1; }));
+  const running=openingMap(fid,monthStart,Object.keys(touched));
 
   const blocks=dks.map(dk=>{
     const d=days[dk];
@@ -157,6 +164,7 @@ export function deleteSelectedLogs(){
 
 /* ---------- Засварын түүх ---------- */
 export function openAudit(){
+  if(!requireOnline()) return;
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   selAudits.clear(); renderAudit(); show("scrAudit");
 }
