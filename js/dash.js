@@ -20,15 +20,23 @@ export function openDash(){
 export function setDashDate(v){ DASH().date = v || isoStr(); renderDash(); }
 export function toggleDashOrg(k){ DASH().openOrg = DASH().openOrg===k ? null : k; renderDash(); }
 
-/* Тухайн мөч хүртэлх үлдэгдэл (гол нэгжээр) */
-function stockAt(fid,itemId,ts){
-  let kg=0,pcs=0;
+/* Тухайн мөч хүртэлх үлдэгдлийг бүх бараагаар нэг удаагийн гүйлтээр гаргана.
+   Бараа бүрд log-ийг дахин уншвал бүртгэл олшрох тусам мэдэгдэхүйц удаашрана. */
+function stockMapAt(ts,fids){
+  const map={};
   db.log.forEach(e=>{
-    if(e.fridge!==fid || e.item!==itemId || e.ts>ts) return;
+    if(e.ts>ts) return;
+    if(fids && fids.indexOf(e.fridge)<0) return;
+    const c = map[e.item] = map[e.item] || {kg:0,pcs:0};
     const s=e.action==="in"?1:-1;
-    kg+=s*(e.kg||0); pcs+=s*(e.pcs||0);
+    c.kg+=s*(e.kg||0); c.pcs+=s*(e.pcs||0);
   });
-  return mainUnitOf(itemId)==="pcs" ? pcs : num(kg);
+  return map;
+}
+function qtyFromMap(map,itemId){
+  const c=map[itemId];
+  if(!c) return 0;
+  return mainUnitOf(itemId)==="pcs" ? c.pcs : num(c.kg);
 }
 
 /* ---------- Барааны түүх ----------
@@ -65,8 +73,7 @@ export function renderItemHist(){
   const from=dayStartTs(IH().from), to=dayEndTs(IH().to);
 
   /* Эхлэх өдрийн эхэн үеийн үлдэгдэл */
-  let opening=0;
-  db.fridges.forEach(fr=>{ opening+=stockAt(fr.id,id,from-1); });
+  const opening=qtyFromMap(stockMapAt(from-1),id);
 
   const rows=db.log.filter(e=>e.item===id && e.ts>=from && e.ts<=to).sort((a,b)=>a.ts-b.ts);
   const label = IH().from===IH().to
@@ -118,15 +125,12 @@ export function renderDash(){
      Барааны нэр дээр дарвал тухайн барааны түүх нээгдэнэ. */
   const dayEnd=new Date(DASH().date+"T23:59:59").getTime();
   const dayStart=new Date(DASH().date+"T00:00:00").getTime();
-  const rows=liveItems().map(it=>{
-    let before=0, after=0;
-    db.fridges.forEach(fr=>{
-      if((it.fridges||[1,2]).indexOf(fr.id)<0) return;
-      before+=stockAt(fr.id,it.id,dayStart);
-      after +=stockAt(fr.id,it.id,dayEnd);
-    });
-    return {it, before:num(before), after:num(after)};
-  }).filter(r=>r.before||r.after);
+  const beforeMap=stockMapAt(dayStart), afterMap=stockMapAt(dayEnd);
+  const rows=liveItems().map(it=>({
+    it,
+    before:qtyFromMap(beforeMap,it.id),
+    after: qtyFromMap(afterMap, it.id)
+  })).filter(r=>r.before||r.after);
 
   $("dashStock").innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl" style="min-width:330px">
       <thead><tr><th>Бараа</th><th class="num">Өмнөх</th><th class="num">Өөрчлөлт</th><th class="num">Үлдэгдэл</th></tr></thead>
