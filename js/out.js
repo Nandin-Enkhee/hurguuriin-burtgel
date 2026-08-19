@@ -7,6 +7,7 @@ import { $, toast, selectHTML, partyOptions, partyPlaceholder, onChoose } from '
 import { show } from './router.js';
 import { registerPicker, renderPicker, qtyOf } from './picker.js';
 import { fbSet, fbDel, save, pushSettings, nextNo } from './sync.js';
+import { requireOnline } from './auth.js';
 import { openFridge } from './fridge.js';
 import { drawReceipt } from './receipt.js';
 
@@ -24,6 +25,7 @@ registerPicker("out",{
 });
 
 export function openOut(){
+  if(!requireOnline()) return;
   const known = db.lastIssuer && db.workers.some(w=>w.id===db.lastIssuer && !w.hidden) ? db.lastIssuer : null;
   state.cart={ partner:null, partnerKind:null, issuer:known,
                items:{}, pcs:{}, per:{}, sacks:{}, editId:null };
@@ -81,6 +83,7 @@ onChoose.partner = id => {
 onChoose.issuer = id => { C().issuer=id; db.lastIssuer=id; save(); renderOut(); };
 
 export function addOrgInline(){
+  if(!requireOnline()) return;
   const n=$("noName").value.trim();
   if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
   const p={id:uid(),name:n,reg:$("noReg").value.trim(),phone:$("noPhone").value.trim()};
@@ -90,6 +93,7 @@ export function addOrgInline(){
   toast(n+" нэмэгдэж сонгогдлоо");
 }
 export function addPersonInline(){
+  if(!requireOnline()) return;
   const n=$("personName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
   db.persons=db.persons||[];
@@ -132,6 +136,7 @@ export function renderOutTotal(){
 }
 
 export async function makeReceipt(){
+  if(!requireOnline()) return;
   if(state.busy.receipt) return;
   const c=C();
   const ids=Object.keys(c.items).filter(id=>outQty(id)>0);
