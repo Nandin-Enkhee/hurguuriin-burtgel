@@ -306,6 +306,7 @@
   </div>
   <div class="card" id="salAddCard" style="display:none">
     <button class="btn btn-in" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
+    <button class="btn btn-sm" style="margin-top:10px" onclick="openAttend()">Тогтмол цалинтай ажилчдын ирц</button>
   </div>
 </div>
 
@@ -317,6 +318,28 @@
     <input type="month" class="date-in" id="wdMonth" onchange="setSalMonth(this.value);renderWorkerDetail()">
   </div>
   <div id="wdBody"></div>
+</div>
+
+<!-- ============ ТОГТМОЛ ЦАЛИНТАЙ АЖИЛЧДЫН ИРЦ ============ -->
+<div class="screen" id="scrAttend">
+  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ирц тэмдэглэх</h2></div>
+  <div class="card">
+    <h3>Огноо</h3>
+    <input type="date" class="date-in" id="attDate" onchange="setAttendDate(this.value)">
+  </div>
+  <div class="card">
+    <h3>Тухайн өдөр ажилласан хүмүүс</h3>
+    <div class="tool-row">
+      <button onclick="allAttendWorkers(true)">Бүгдийг сонгох</button>
+      <button onclick="allAttendWorkers(false)">Цэвэрлэх</button>
+    </div>
+    <div class="scroll-box" id="attList"></div>
+  </div>
+  <div class="card">
+    <h3>Тооцоо</h3>
+    <div id="attTotal"></div>
+  </div>
+  <div class="save-wrap"><button class="btn btn-in" id="attSave" onclick="saveAttend()">Хадгалах</button></div>
 </div>
 
 <!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
