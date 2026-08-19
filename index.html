@@ -13,6 +13,7 @@
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
 <link rel="stylesheet" href="css/app.css">
+<!-- ================= FIREBASE ТОХИРГОО ================= -->
 <script type="module">
   const firebaseConfig = {
     apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
@@ -39,7 +40,12 @@
     window.FB = { fs, doc:FS.doc, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
                   collection:FS.collection, onSnapshot:FS.onSnapshot, runTransaction:FS.runTransaction };
     const auth = getAuth(app);
-    onAuthStateChanged(auth, u=>{ if(u && window.startSync) window.startSync(); });
+    onAuthStateChanged(auth, u=>{
+      /* Энэ төхөөрөмжийн дугаар — Firestore дүрэмд зөвшөөрөх жагсаалтад
+         нэмэхэд хэрэглэнэ. Хөтчийн санах ойд үлддэг тул тогтмол. */
+      window.__uid = u ? u.uid : null;
+      if(u && window.startSync) window.startSync();
+    });
     signInAnonymously(auth).catch(e=>{
       console.error("Firebase auth алдаа:",e);
       window.setSyncState && window.setSyncState(
@@ -50,6 +56,7 @@
 </head>
 <body>
 
+<!-- ============ НЭВТРЭХ ============ -->
 <div class="screen active" id="scrLogin">
   <div class="login-box">
     <h1>Хөргүүрийн бүртгэл</h1>
@@ -67,6 +74,8 @@
     
   </div>
 </div>
+
+<!-- ============ ҮНДСЭН ЦЭС ============ -->
 <div class="screen" id="scrHome">
   <h1 class="page-title">Үндсэн цэс</h1>
   <div class="sub"><span id="homeDate"></span> · <span id="syncLine"></span></div>
@@ -85,6 +94,7 @@
   <button class="logout" onclick="logout()">Гарах</button>
 </div>
 
+<!-- ============ ХЯНАЛТЫН САМБАР ============ -->
 <div class="screen" id="scrDash">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Хяналтын самбар</h2></div>
   <div class="card">
@@ -98,6 +108,7 @@
   <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
 </div>
 
+<!-- ============ БАРААНЫ ТҮҮХ ============ -->
 <div class="screen" id="scrItemHist">
   <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
   <div class="card">
@@ -110,6 +121,7 @@
   <div id="ihBody"></div>
 </div>
 
+<!-- ============ ХӨРГҮҮР ============ -->
 <div class="screen" id="scrFridge">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="frTitle"></h2></div>
   <div class="card"><h3>Үлдэгдэл · <span id="frDate"></span></h3><div class="scroll-box" id="frList"></div></div>
@@ -120,6 +132,7 @@
   <div class="card"><h3 id="mvTitle">Өнөөдөр</h3><div class="scroll-box" id="mvList"></div></div>
 </div>
 
+<!-- ============ ОРУУЛАХ ============ -->
 <div class="screen" id="scrEntry">
   <div class="bar"><button class="back" onclick="backToFridge()">Буцах</button><h2 id="enTitle"></h2></div>
   <div class="card">
@@ -145,6 +158,7 @@
   <div class="save-wrap"><button class="btn btn-in" id="entrySave" onclick="saveEntry()">Хадгалах</button></div>
 </div>
 
+<!-- ============ ГАДНААС ХУДАЛДАЖ АВСАН ============ -->
 <div class="screen" id="scrBuy">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Гаднаас авсан</h2></div>
   <div class="card">
@@ -185,6 +199,7 @@
   <div class="save-wrap"><button class="btn btn-in" id="buySave" onclick="saveBuy()">Хадгалах</button></div>
 </div>
 
+<!-- ============ ГАРГАХ ============ -->
 <div class="screen" id="scrOut">
   <div class="bar"><button class="back" onclick="leaveOut()">Буцах</button><h2 id="outTitle"></h2></div>
   <div class="card">
@@ -218,6 +233,7 @@
   <div class="save-wrap"><button class="btn btn-out" id="outSave" onclick="makeReceipt()">Баримт гаргах</button></div>
 </div>
 
+<!-- ============ БАРИМТ ============ -->
 <div class="screen" id="scrReceipt">
   <div class="bar"><button class="back" onclick="closeReceipt()">Буцах</button><h2>Төлбөрийн баримт</h2></div>
   <div id="rcBody"></div>
@@ -228,6 +244,7 @@
   </div>
 </div>
 
+<!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
 <div class="screen" id="scrDebt">
   <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
   <div class="seg" id="debtSeg">
@@ -255,6 +272,7 @@
   <div class="card"><h3>Харилцагчид</h3><div class="scroll-box" style="max-height:58vh" id="debtList"></div></div>
 </div>
 
+<!-- ============ БАРИМТ, ТҮҮХ ============ -->
 <div class="screen" id="scrRecords">
   <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
   <div class="seg" id="recSeg">
@@ -280,6 +298,7 @@
   </div>
 </div>
 
+<!-- ============ ЦАЛИН ============ -->
 <div class="screen" id="scrSalary">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
   <div class="card">
@@ -296,6 +315,7 @@
   </div>
 </div>
 
+<!-- ============ АЖИЛЧНЫ ДЭЛГЭРЭНГҮЙ ============ -->
 <div class="screen" id="scrWorker">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="wdTitle"></h2></div>
   <div class="card">
@@ -305,6 +325,7 @@
   <div id="wdBody"></div>
 </div>
 
+<!-- ============ ТОГТМОЛ ЦАЛИНТАЙ АЖИЛЧДЫН ИРЦ ============ -->
 <div class="screen" id="scrAttend">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ирц тэмдэглэх</h2></div>
   <div class="card">
@@ -326,6 +347,7 @@
   <div class="save-wrap"><button class="btn btn-in" id="attSave" onclick="saveAttend()">Хадгалах</button></div>
 </div>
 
+<!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
 <div class="screen" id="scrWork">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
   <div class="card">
@@ -351,6 +373,7 @@
   <div class="save-wrap"><button class="btn btn-in" id="workSave" onclick="saveWork()">Хадгалах</button></div>
 </div>
 
+<!-- ============ ТОХИРГОО ============ -->
 <div class="screen" id="scrAdmin">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тохиргоо</h2></div>
   <div class="menu">
@@ -364,6 +387,7 @@
     <button class="btn" onclick="openPartners()">Харилцагч · хувь хүн</button>
     <button class="btn" onclick="openCompany()">Байгууллагын мэдээлэл</button>
     <button class="btn" onclick="openCodes()">Нэвтрэх код</button>
+    <button class="btn" onclick="openDevice()">Энэ төхөөрөмжийн дугаар</button>
     <button class="btn" onclick="openBackup()">Нөөцлөх</button>
   </div>
 </div>
@@ -459,6 +483,19 @@
     <div class="edit-row"><span class="nm">Админы код</span>
       <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
     <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
+  </div>
+</div>
+
+<div class="screen" id="scrDevice">
+  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Төхөөрөмжийн дугаар</h2></div>
+  <div class="card">
+    <h3>Энэ утас / компьютерийн дугаар</h3>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">
+      Firebase → Firestore → app/devices доторх uids жагсаалтад энэ дугаарыг нэмбэл
+      энэ төхөөрөмж ажиллана. Жагсаалтад байхгүй төхөөрөмж өгөгдөл харахгүй.</p>
+    <div id="devUid" class="tbl-wrap" style="padding:12px;font-family:var(--mono);
+         font-size:13px;word-break:break-all;line-height:1.6"></div>
+    <button class="btn btn-in btn-sm" style="margin-top:12px" onclick="copyUid()">Дугаарыг хуулах</button>
   </div>
 </div>
 
