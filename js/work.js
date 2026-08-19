@@ -1,8 +1,8 @@
 /* Ажлын бүртгэл — цалин бодох үндэс.
    Хөргүүрийн үлдэгдэлд огт нөлөөлөхгүй, зөвхөн хэн юуг хэдэн кг хийснийг бүртгэнэ. */
 import { db, state, uid, saveLocal } from './state.js';
-import { esc, f, int, num, money, isoStr, tsOfIso, dateStr, itemName,
-         liveItems, liveWorkers, workerName, payUnitOf, uShort, rateOf,
+import { esc, f, int, num, money, isoStr, tsOfIso, dateStr, dayKey, dayKeyOfIso,
+         itemName, liveItems, liveWorkers, workerName, payUnitOf, uShort, rateOf,
          hasKg, hasPcs, qtyFor, payFor } from './util.js';
 import { $, toast, selectHTML, onChoose } from './ui.js';
 import { show } from './router.js';
@@ -31,8 +31,12 @@ export function openWork(){
 export function setWorkDate(v){ W().date = v || isoStr(); renderWorkTotal(); }
 onChoose.workw = id => { W().worker=id; renderWork(); };
 
+/* Тогтмол цалинтай хүн хэсгийн тарифаар цалинждаггүй тул энд гарахгүй —
+   тэдний ажилласан өдрийг "Ирц тэмдэглэх" хэсгээс бүртгэнэ. */
+function pieceWorkers(){ return liveWorkers().filter(w=>w.payType!=="fixed"); }
+
 export function renderWork(){
-  $("sel_workw").innerHTML=selectHTML("workw",liveWorkers(),W().worker,"Ажилчнаа сонгоно уу");
+  $("sel_workw").innerHTML=selectHTML("workw",pieceWorkers(),W().worker,"Ажилчнаа сонгоно уу");
   renderPicker("work");
   renderWorkTotal();
 }
@@ -96,5 +100,100 @@ export function saveWork(){
   } finally {
     state.busy.work=false;
     const b=$("workSave"); if(b) b.disabled=false;
+  }
+}
+
+/* ===================== Тогтмол цалинтай ажилчдын ирц =====================
+   Тогтмол цалинтай хүн хэсгийн ажил бүртгүүлдэггүй тул тэдний ажилласан
+   өдрийг энд тэмдэглэнэ. Нэг өдөрт олон хүнийг зэрэг чагтална. */
+const A = () => state.attend;
+
+function fixedWorkers(){ return liveWorkers().filter(w=>w.payType==="fixed"); }
+
+export function openAttend(){
+  if(!requireOnline()) return;
+  if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
+  const d0 = state.salary.date || isoStr();
+  state.attend={ date:d0, workers:markedOn(d0) };
+  const d=$("attDate"); d.value=A().date; d.max=isoStr();
+  renderAttend(); show("scrAttend");
+}
+/* Тухайн өдөр аль хэдийн тэмдэглэгдсэн хүмүүс */
+function markedOn(iso){
+  const dk=dayKeyOfIso(iso);
+  return (db.attend||[]).filter(x=>dayKey(x.ts)===dk).map(x=>x.worker);
+}
+export function setAttendDate(v){
+  A().date = v || isoStr();
+  A().workers = markedOn(A().date);
+  renderAttend();
+}
+export function toggleAttendWorker(id){
+  const ws=A().workers, i=ws.indexOf(id);
+  if(i>=0) ws.splice(i,1); else ws.push(id);
+  renderAttend();
+}
+export function allAttendWorkers(on){
+  A().workers = on ? fixedWorkers().map(w=>w.id) : [];
+  renderAttend();
+}
+export function renderAttend(){
+  const ws=fixedWorkers();
+  if(!ws.length){
+    $("attList").innerHTML=`<div class="empty">Тогтмол цалинтай ажилчин алга.<br>
+      Тохиргоо → Ажилчид хэсгээс тэмдэглэнэ үү.</div>`;
+    $("attTotal").innerHTML="";
+    return;
+  }
+  $("attList").innerHTML = ws.map(w=>{
+    const on=A().workers.indexOf(w.id)>=0;
+    return `<div class="pick">
+      <button type="button" class="check-row${on?" on":""}" onclick="toggleAttendWorker('${w.id}')">
+        <span class="tick">✓</span>
+        <span>${esc(w.name)}<small>${money(+w.salary||0)} / өдөр</small></span></button></div>`;
+  }).join("");
+
+  const chosen=ws.filter(w=>A().workers.indexOf(w.id)>=0);
+  const total=chosen.reduce((s,w)=>s+(+w.salary||0),0);
+  $("attTotal").innerHTML = chosen.length
+    ? `<div class="tbl-wrap"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Ажилчин</th><th class="num">Өдрийн хөлс</th></tr></thead>
+        <tbody>${chosen.map(w=>`<tr><td class="nm">${esc(w.name)}</td>
+          <td class="amt">${money(+w.salary||0)}</td></tr>`).join("")}
+          <tr class="sum"><td>${dateStr(new Date(A().date+"T00:00:00"))} · ${chosen.length} хүн</td>
+            <td class="amt">${money(total)}</td></tr>
+        </tbody></table></div>`
+    : `<div class="empty">Ажилласан хүмүүсээ чагтална уу</div>`;
+}
+export function saveAttend(){
+  if(state.busy.attend) return;
+  if(!requireOnline()) return;
+  const iso=A().date, dk=dayKeyOfIso(iso);
+  const want=A().workers.slice();
+
+  state.busy.attend=true;
+  const btn=$("attSave"); if(btn) btn.disabled=true;
+  try{
+    /* Тухайн өдрийн хуучин тэмдэглэгээг шинээр солино */
+    const old=(db.attend||[]).filter(x=>dayKey(x.ts)===dk);
+    const removeIds=old.filter(x=>want.indexOf(x.worker)<0).map(x=>x.id);
+    const have=old.map(x=>x.worker);
+    const addIds=want.filter(w=>have.indexOf(w)<0);
+
+    db.attend=(db.attend||[]).filter(x=>removeIds.indexOf(x.id)<0);
+    removeIds.forEach(id=>fbDel("attend",id));
+
+    const ts=tsOfIso(iso), fresh=[];
+    addIds.forEach(w=>{
+      const rec={id:uid(), ts, worker:w};
+      db.attend.push(rec); fresh.push(rec);
+    });
+    saveLocal();
+    fresh.forEach(r=>fbSet("attend",r.id,r));
+    toast(`${dateStr(new Date(ts))} · ${want.length} хүн тэмдэглэгдлээ`);
+    window.openSalary && window.openSalary();
+  } finally {
+    state.busy.attend=false;
+    const b=$("attSave"); if(b) b.disabled=false;
   }
 }
