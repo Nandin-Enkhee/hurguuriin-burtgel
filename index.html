@@ -13,7 +13,6 @@
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
 <link rel="stylesheet" href="css/app.css">
-<!-- ================= FIREBASE ТОХИРГОО ================= -->
 <script type="module">
   const firebaseConfig = {
     apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
@@ -51,7 +50,6 @@
 </head>
 <body>
 
-<!-- ============ НЭВТРЭХ ============ -->
 <div class="screen active" id="scrLogin">
   <div class="login-box">
     <h1>Хөргүүрийн бүртгэл</h1>
@@ -69,8 +67,6 @@
     
   </div>
 </div>
-
-<!-- ============ ҮНДСЭН ЦЭС ============ -->
 <div class="screen" id="scrHome">
   <h1 class="page-title">Үндсэн цэс</h1>
   <div class="sub"><span id="homeDate"></span> · <span id="syncLine"></span></div>
@@ -89,7 +85,6 @@
   <button class="logout" onclick="logout()">Гарах</button>
 </div>
 
-<!-- ============ ХЯНАЛТЫН САМБАР ============ -->
 <div class="screen" id="scrDash">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Хяналтын самбар</h2></div>
   <div class="card">
@@ -103,7 +98,6 @@
   <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
 </div>
 
-<!-- ============ БАРААНЫ ТҮҮХ ============ -->
 <div class="screen" id="scrItemHist">
   <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
   <div class="card">
@@ -116,7 +110,6 @@
   <div id="ihBody"></div>
 </div>
 
-<!-- ============ ХӨРГҮҮР ============ -->
 <div class="screen" id="scrFridge">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="frTitle"></h2></div>
   <div class="card"><h3>Үлдэгдэл · <span id="frDate"></span></h3><div class="scroll-box" id="frList"></div></div>
@@ -127,7 +120,6 @@
   <div class="card"><h3 id="mvTitle">Өнөөдөр</h3><div class="scroll-box" id="mvList"></div></div>
 </div>
 
-<!-- ============ ОРУУЛАХ ============ -->
 <div class="screen" id="scrEntry">
   <div class="bar"><button class="back" onclick="backToFridge()">Буцах</button><h2 id="enTitle"></h2></div>
   <div class="card">
@@ -153,7 +145,6 @@
   <div class="save-wrap"><button class="btn btn-in" id="entrySave" onclick="saveEntry()">Хадгалах</button></div>
 </div>
 
-<!-- ============ ГАДНААС ХУДАЛДАЖ АВСАН ============ -->
 <div class="screen" id="scrBuy">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Гаднаас авсан</h2></div>
   <div class="card">
@@ -194,7 +185,6 @@
   <div class="save-wrap"><button class="btn btn-in" id="buySave" onclick="saveBuy()">Хадгалах</button></div>
 </div>
 
-<!-- ============ ГАРГАХ ============ -->
 <div class="screen" id="scrOut">
   <div class="bar"><button class="back" onclick="leaveOut()">Буцах</button><h2 id="outTitle"></h2></div>
   <div class="card">
@@ -228,7 +218,6 @@
   <div class="save-wrap"><button class="btn btn-out" id="outSave" onclick="makeReceipt()">Баримт гаргах</button></div>
 </div>
 
-<!-- ============ БАРИМТ ============ -->
 <div class="screen" id="scrReceipt">
   <div class="bar"><button class="back" onclick="closeReceipt()">Буцах</button><h2>Төлбөрийн баримт</h2></div>
   <div id="rcBody"></div>
@@ -239,7 +228,6 @@
   </div>
 </div>
 
-<!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
 <div class="screen" id="scrDebt">
   <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
   <div class="seg" id="debtSeg">
@@ -267,7 +255,6 @@
   <div class="card"><h3>Харилцагчид</h3><div class="scroll-box" style="max-height:58vh" id="debtList"></div></div>
 </div>
 
-<!-- ============ БАРИМТ, ТҮҮХ ============ -->
 <div class="screen" id="scrRecords">
   <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
   <div class="seg" id="recSeg">
@@ -293,7 +280,6 @@
   </div>
 </div>
 
-<!-- ============ ЦАЛИН ============ -->
 <div class="screen" id="scrSalary">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
   <div class="card">
@@ -310,7 +296,6 @@
   </div>
 </div>
 
-<!-- ============ АЖИЛЧНЫ ДЭЛГЭРЭНГҮЙ ============ -->
 <div class="screen" id="scrWorker">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="wdTitle"></h2></div>
   <div class="card">
@@ -320,7 +305,6 @@
   <div id="wdBody"></div>
 </div>
 
-<!-- ============ ТОГТМОЛ ЦАЛИНТАЙ АЖИЛЧДЫН ИРЦ ============ -->
 <div class="screen" id="scrAttend">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ирц тэмдэглэх</h2></div>
   <div class="card">
@@ -342,7 +326,6 @@
   <div class="save-wrap"><button class="btn btn-in" id="attSave" onclick="saveAttend()">Хадгалах</button></div>
 </div>
 
-<!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
 <div class="screen" id="scrWork">
   <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
   <div class="card">
@@ -368,7 +351,6 @@
   <div class="save-wrap"><button class="btn btn-in" id="workSave" onclick="saveWork()">Хадгалах</button></div>
 </div>
 
-<!-- ============ ТОХИРГОО ============ -->
 <div class="screen" id="scrAdmin">
   <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тохиргоо</h2></div>
   <div class="menu">
