@@ -9,6 +9,7 @@ import { save, fbSet, fbDel, pushSettings, getBackupPin, setBackupPin } from './
 import { renderHome, requireOnline } from './auth.js';
 
 export function openAdmin(){
+  if(!requireOnline()) return;
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   show("scrAdmin");
 }
@@ -61,12 +62,14 @@ export function setTrack(id,v){
 }
 export function setPayUnit(id,v){ const it=db.items.find(i=>i.id===id); if(it){ it.payUnit=v; save(); renderItems(); } }
 export function addItem(){
+  if(!requireOnline()) return;
   const n=$("newItemName").value.trim();
   if(!n){ toast("Барааны нэрийг бичнэ үү"); return; }
   db.items.push({id:uid(),name:n,track:"both",payUnit:"kg",price:0,buyPrice:0,defRate:0,perSack:0,fridges:[1,2]});
   $("newItemName").value=""; save(); renderItems(); toast(n+" нэмэгдлээ");
 }
 export function delItem(id){
+  if(!requireOnline()) return;
   if(!confirm(itemName(id)+" -г жагсаалтаас хасах уу?")) return;
   const used=db.log.some(e=>e.item===id);
   if(used) db.items.find(i=>i.id===id).hidden=true;   /* хуучин бүртгэл хэвээр үлдэнэ */
@@ -137,6 +140,7 @@ export function toggleWorkerFixed(id){
 export function setWorkerSalary(id,v){ const w=db.workers.find(x=>x.id===id); if(w){ w.salary=f(v); save(); } }
 
 export function addWorker(){
+  if(!requireOnline()) return;
   const n=$("newWorkerName").value.trim();
   if(!n){ toast("Ажилчны нэрийг бичнэ үү"); return; }
   const rates={}; db.items.forEach(i=>rates[i.id]=+i.defRate||0);
@@ -144,6 +148,7 @@ export function addWorker(){
   $("newWorkerName").value=""; save(); renderWorkers(); toast(n+" нэмэгдлээ");
 }
 export function delWorker(id){
+  if(!requireOnline()) return;
   if(!confirm(workerName(id)+" -г хасах уу?")) return;
   const used=db.log.some(e=>e.worker===id) || db.receipts.some(r=>r.issuer===id);
   if(used) db.workers.find(w=>w.id===id).hidden=true;  /* цалингийн түүх хэвээр үлдэнэ */
@@ -229,18 +234,21 @@ export function renderPartners(){
   $("partyBox").innerHTML=h;
 }
 export function addPartner(){
+  if(!requireOnline()) return;
   const n=$("npName").value.trim();
   if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
   db.partners.push({id:uid(),name:n,reg:$("npReg").value.trim(),phone:$("npPhone").value.trim()});
   save(); renderPartners(); toast(n+" нэмэгдлээ");
 }
 export function delPartner(id){
+  if(!requireOnline()) return;
   const p=db.partners.find(x=>x.id===id);
   if(!p || !confirm(p.name+" -г хасах уу?")) return;
   db.partners=db.partners.filter(x=>x.id!==id);
   save(); renderPartners(); toast("Хаслаа");
 }
 export function addPerson(){
+  if(!requireOnline()) return;
   const n=$("npPersonName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
   db.persons=db.persons||[];
@@ -249,6 +257,7 @@ export function addPerson(){
   save(); renderPartners(); toast(n+" нэмэгдлээ");
 }
 export function delPerson(id){
+  if(!requireOnline()) return;
   const p=(db.persons||[]).find(x=>x.id===id);
   if(!p) return;
   const used = db.receipts.some(r=>r.buyer && r.buyer.pid===id)
@@ -270,6 +279,7 @@ export function openCompany(){
   show("scrCompany");
 }
 export function saveCompany(){
+  if(!requireOnline()) return;
   db.company={
     name:$("coName").value.trim(), phone:$("coPhone").value.trim(), reg:$("coReg").value.trim(),
     bank:$("coBank").value.trim(), account:$("coAccount").value.trim(), accountName:$("coAccName").value.trim()
@@ -280,6 +290,7 @@ export function saveCompany(){
 /* ---------- Код ---------- */
 export function openCodes(){ $("pinWorker").value=db.pin; $("pinAdmin").value=db.adminPin; show("scrCodes"); }
 export function savePins(){
+  if(!requireOnline()) return;
   const p=$("pinWorker").value.trim(), a=$("pinAdmin").value.trim();
   if(!/^\d{4}$/.test(p)||!/^\d{4}$/.test(a)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
   if(p===a){ toast("Хоёр код өөр байх ёстой"); return; }
@@ -310,6 +321,7 @@ export function copyBackup(){
   catch(e){ toast("Гараар сонгож хуулна уу"); }
 }
 export function restoreBackup(){
+  if(!requireOnline()) return;
   let d;
   try{ d=JSON.parse($("bkText").value); }
   catch(e){ toast("Нөөцийн бичвэр буруу байна"); return; }
@@ -324,6 +336,7 @@ export function restoreBackup(){
   toast("Сэргээлээ"); renderHome();
 }
 export function wipeAll(){
+  if(!requireOnline()) return;
   if(!confirm("Бүх орлого зарлага, баримт, цалингийн бүртгэл устана. Итгэлтэй байна уу?")) return;
   if(!confirm("Дахин баталгаажуулна уу — устгасан бүртгэл сэргэхгүй.")) return;
   const old={ log:db.log.slice(), receipts:db.receipts.slice(),
