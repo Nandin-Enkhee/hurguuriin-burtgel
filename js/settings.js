@@ -353,3 +353,20 @@ export function wipeAll(){
   old.works.forEach(x=>fbDel("works",x.id));
   toast("Бүртгэл цэвэрлэгдлээ");
 }
+
+export function openDevice(){
+  if(!requireOnline()) return;
+  const uid=window.__uid;
+  $("devUid").textContent = uid || "Дугаар хараахан гараагүй байна · сервертэй холбогдохыг хүлээнэ үү";
+  show("scrDevice");
+}
+export function copyUid(){
+  const uid=window.__uid;
+  if(!uid){ toast("Дугаар хараахан гараагүй байна"); return; }
+  const ta=document.createElement("textarea");
+  ta.value=uid; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,999999);
+  try{ document.execCommand("copy"); toast("Хуулагдлаа"); }
+  catch(e){ toast("Гараар сонгож хуулна уу"); }
+  document.body.removeChild(ta);
+}
