@@ -7,6 +7,7 @@ import { $, toast, selectHTML, partyOptions, partyPlaceholder, onChoose } from '
 import { show } from './router.js';
 import { registerPicker, renderPicker, qtyOf } from './picker.js';
 import { fbSet, save, pushSettings, nextNo } from './sync.js';
+import { requireOnline } from './auth.js';
 import { openFridge } from './fridge.js';
 
 const B = () => state.buy;
@@ -26,6 +27,7 @@ registerPicker("buy",{
 });
 
 export function openBuy(){
+  if(!requireOnline()) return;
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   state.buy={ date:isoStr(), fridge:state.curFridge||1, supplier:null,
               supplierKind:null, items:{}, prices:{} };
@@ -53,6 +55,7 @@ onChoose.supplier = id => {
   if(id==="__addperson") setTimeout(()=>$("bpName").focus(),50);
 };
 export function addSupplierInline(){
+  if(!requireOnline()) return;
   const n=$("bsName").value.trim();
   if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
   const p={id:uid(),name:n,reg:$("bsReg").value.trim(),phone:$("bsPhone").value.trim()};
@@ -62,6 +65,7 @@ export function addSupplierInline(){
   toast(n+" нэмэгдэж сонгогдлоо");
 }
 export function addSupplierPersonInline(){
+  if(!requireOnline()) return;
   const n=$("bpName").value.trim();
   if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
   db.persons=db.persons||[];
@@ -101,6 +105,7 @@ export function renderBuyTotal(){
 }
 
 export async function saveBuy(){
+  if(!requireOnline()) return;
   if(state.busy.buy) return;
   const b=B();
   const ids=Object.keys(b.items).filter(id=>buyQty(id)>0);
