@@ -356,8 +356,10 @@ export function wipeAll(){
 
 export function openDevice(){
   if(!requireOnline()) return;
+  const box=$("devUid");
+  if(!box){ toast("Энэ хэсэг ачаалагдаагүй байна · index.html шинэчлэгдээгүй"); return; }
   const uid=window.__uid;
-  $("devUid").textContent = uid || "Дугаар хараахан гараагүй байна · сервертэй холбогдохыг хүлээнэ үү";
+  box.textContent = uid || "Дугаар хараахан гараагүй байна · сервертэй холбогдохыг хүлээнэ үү";
   show("scrDevice");
 }
 export function copyUid(){
