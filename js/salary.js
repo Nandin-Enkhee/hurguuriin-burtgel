@@ -26,6 +26,10 @@ function colLabel(d){ return (+monthOf().split("-")[1])+"/"+d; }
 function worksOf(wid){
   return (db.works||[]).filter(x=>x.worker===wid && inMonth(x.ts) && qtyFor(x)>0);
 }
+/* Тогтмол цалинтай ажилчны ирц */
+function attendOf(wid){
+  return (db.attend||[]).filter(x=>x.worker===wid && inMonth(x.ts)).sort((a,b)=>a.ts-b.ts);
+}
 function advancesOf(wid){
   return (db.wagepays||[]).filter(x=>x.worker===wid && inMonth(x.ts)).sort((a,b)=>a.ts-b.ts);
 }
@@ -34,14 +38,17 @@ function advanceSum(wid){ return advancesOf(wid).reduce((s,x)=>s+x.amount,0); }
 /* Ажилчны сарын олсон дүн ба өдөр тутмын задаргаа */
 function earnByDay(w){
   const byDay={};
-  worksOf(w.id).forEach(x=>{
-    const d=dayNo(x.ts);
-    byDay[d]=(byDay[d]||0)+payFor(x);
-  });
   if(w.payType==="fixed"){
-    /* Тогтмол цалинтай — ажилласан өдөр тутамд өдрийн хөлс */
+    /* Тогтмол цалинтай — тэмдэглэсэн ирцийн өдөр тутамд өдрийн хөлс.
+       Хэсгийн ажил бүртгүүлсэн бол тэр өдөр нь ч ажилласанд тооцогдоно. */
     const rate=+w.salary||0;
-    Object.keys(byDay).forEach(d=>{ byDay[d]=rate; });
+    attendOf(w.id).forEach(x=>{ byDay[dayNo(x.ts)]=rate; });
+    worksOf(w.id).forEach(x=>{ byDay[dayNo(x.ts)]=rate; });
+  }else{
+    worksOf(w.id).forEach(x=>{
+      const d=dayNo(x.ts);
+      byDay[d]=(byDay[d]||0)+payFor(x);
+    });
   }
   let total=0;
   Object.keys(byDay).forEach(d=>{ total+=byDay[d]; });
@@ -66,6 +73,7 @@ export function renderSalary(){
   /* Өгөгдөлтэй өдрүүд л багана болно */
   const dset={};
   (db.works||[]).forEach(x=>{ if(inMonth(x.ts) && qtyFor(x)>0) dset[dayNo(x.ts)]=1; });
+  (db.attend||[]).forEach(x=>{ if(inMonth(x.ts)) dset[dayNo(x.ts)]=1; });
   const days=Object.keys(dset).map(Number).sort((a,b)=>a-b);
 
   const rows=ws.map(w=>({w, e:earnByDay(w), adv:advanceSum(w.id)}))
@@ -124,13 +132,19 @@ export function renderWorkerDetail(){
   if(!days.length){
     itemBlock=`<div class="card"><div class="empty">${monthLabel()}-д ажлын бүртгэл алга</div></div>`;
   }else if(w.payType==="fixed"){
+    const att={};
+    attendOf(w.id).forEach(x=>{ att[dayNo(x.ts)]=x.id; });
     itemBlock=`<div class="card"><h3>Ажилласан өдрүүд</h3>
       <div class="tbl-wrap"><table class="tbl" style="min-width:0">
-        <thead><tr><th>Огноо</th><th class="num">Өдрийн хөлс</th></tr></thead>
+        <thead><tr><th>Огноо</th><th class="num">Өдрийн хөлс</th><th></th></tr></thead>
         <tbody>${days.map(d=>`<tr><td class="nm">${colLabel(d)}</td>
-          <td class="amt">${money(e.byDay[d])}</td></tr>`).join("")}
-          <tr class="sum"><td>${days.length} өдөр · нийт</td><td class="amt">${money(e.total)}</td></tr>
-        </tbody></table></div></div>`;
+          <td class="amt">${money(e.byDay[d])}</td>
+          <td>${state.isAdmin&&att[d]?`<button class="icon-btn" style="padding:4px 8px;font-size:12px"
+                 onclick="delAttend('${att[d]}')">✕</button>`:""}</td></tr>`).join("")}
+          <tr class="sum"><td>${days.length} өдөр · нийт</td><td class="amt">${money(e.total)}</td><td></td></tr>
+        </tbody></table></div>
+      ${state.isAdmin?`<button class="btn btn-sm" style="margin-top:12px"
+          onclick="openAttend()">Ирц тэмдэглэх</button>`:""}</div>`;
   }else{
     const items={};
     worksOf(w.id).forEach(x=>{
@@ -205,6 +219,15 @@ export function delAdvance(id){
   if(!confirm("Энэ урьдчилгааг устгах уу?")) return;
   db.wagepays=db.wagepays.filter(x=>x.id!==id);
   saveLocal(); fbDel("wagepays",id);
+  renderWorkerDetail(); toast("Устгалаа");
+}
+
+/* Ирцийн тэмдэглэгээ устгах */
+export function delAttend(id){
+  if(!requireOnline()) return;
+  if(!confirm("Энэ өдрийн ирцийг устгах уу?")) return;
+  db.attend=db.attend.filter(x=>x.id!==id);
+  saveLocal(); fbDel("attend",id);
   renderWorkerDetail(); toast("Устгалаа");
 }
 
