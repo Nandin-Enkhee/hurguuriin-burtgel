@@ -1,4 +1,4 @@
-/* Нэвтрэх ба үндсэн цэс */
+
 import { db, state } from './state.js';
 import { dateStr, fridgeName } from './util.js';
 import { $, toast } from './ui.js';
@@ -23,8 +23,6 @@ export function initLogin(){
   inputs[0].focus();
 }
 
-/* Сервертэй холбогдоогүй үед бүх үйлдлийг хаана — хоёр утас
-   зөрүүтэй өгөгдөл дээр ажиллахаас сэргийлнэ. */
 export function applyLock(){
   const ok=isOnline();
   const btn=$("loginBtn");
@@ -35,7 +33,6 @@ export function applyLock(){
   const hw=$("homeLock");
   if(hw) hw.style.display = ok ? "none" : "block";
   if(!ok && document.querySelector(".screen.active")?.id!=="scrLogin"){
-    /* Холболт тасарвал үндсэн цэс рүү буцаана */
     state.isAdmin=false;
     show("scrLogin");
   }
