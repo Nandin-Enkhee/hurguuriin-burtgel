@@ -22,7 +22,7 @@ export function defaults(){
     ],
     workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
     partners:[], persons:[], receipts:[], purchases:[], log:[], audits:[],
-    settlements:[], wagepays:[], works:[]
+    settlements:[], wagepays:[], works:[], attend:[]
   };
 }
 function itemDefaults(name,track){
@@ -50,6 +50,7 @@ export function normalize(){
   db.settlements= db.settlements|| [];
   db.wagepays   = db.wagepays   || [];
   db.works      = db.works      || [];
+  db.attend     = db.attend     || [];   /* тогтмол цалинтай ажилчдын ирц */
   db.items      = db.items      || [];
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
@@ -100,17 +101,17 @@ export const state = {
   curFridge:1,
   entry:{ items:{}, recorder:null, date:null },
   work:{ items:{}, worker:null, date:null },
-  cart:{ partner:null, personName:"", personPhone:"", issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
-  buy:{ date:null, fridge:1, supplier:null, supName:"", supPhone:"", items:{}, prices:{} },
+  attend:{ date:null, workers:[] },
+  cart:{ partner:null, partnerKind:null, issuer:null, items:{}, pcs:{}, per:{}, sacks:{}, editId:null },
+  buy:{ date:null, fridge:1, supplier:null, supplierKind:null, items:{}, prices:{} },
   salary:{ period:"day", open:null, date:null, month:null },
   records:{ month:null, fridge:1, openDay:null },
-  matrix:{ month:null },
   itemHist:{ item:null, from:null, to:null },
   dash:{ date:null, openOrg:null },
   debt:{ kind:"due", range:"month", month:null, date:null, search:"", show:"open", openOrg:null },
   rateWorker:null,
   partyOpen:null,
   fiFridge:1,
-  receipt:{ backTo:"scrFridge", current:null },
-  busy:{ entry:false, buy:false, receipt:false, work:false }
+  receipt:{ current:null },
+  busy:{ entry:false, buy:false, receipt:false, work:false, attend:false }
 };
