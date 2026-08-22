@@ -245,6 +245,34 @@ textarea{width:100%;padding:10px;font-size:13px;font-family:var(--mono);}
 .total-line b{font-size:21px;font-weight:700;color:var(--blue-ink);letter-spacing:-.02em;}
 .count-total{text-align:center;font-size:44px;font-weight:800;color:var(--blue-ink);letter-spacing:-.02em;padding:10px 0 2px;font-variant-numeric:tabular-nums;}
 
+.cnt-wrap{display:flex;gap:14px;align-items:stretch;}
+.cnt-list-col{flex:1;min-width:0;}
+.cnt-total-col{
+  flex:0 0 92px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-left:1px solid var(--line);padding-left:12px;text-align:center;
+}
+.cnt-total-col .count-total{font-size:28px;padding:0;line-height:1.1;word-break:break-word;}
+.cnt-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  max-height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:2px 2px 4px;
+}
+.cnt-cell{
+  display:flex;align-items:center;gap:4px;
+  border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--paper);padding:4px 4px 4px 10px;
+}
+.cnt-cell input{
+  flex:1;min-width:0;border:none;background:none;padding:6px 0;
+  font-size:16px;font-weight:650;text-align:center;color:var(--ink);
+}
+.cnt-cell input:focus{outline:none;}
+.cnt-del{
+  flex-shrink:0;width:24px;height:24px;border:none;border-radius:6px;background:none;
+  color:var(--rust);font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.cnt-del:active{background:var(--rust-soft);}
+
 .calc-w{border-bottom:1px solid var(--line-soft);padding:12px 0;}
 .calc-w:first-child{padding-top:0;}
 .calc-w:last-child{border-bottom:none;padding-bottom:0;}
@@ -353,6 +381,13 @@ table.tbl tr.sum td:first-child,table.tbl tr.day-head td:first-child{background:
   .screen .bar{margin-left:-10px;margin-right:-10px;}
   .pick-fields,.line-sum{padding-left:36px;}
   .check-2{flex-direction:column;gap:0;}
+  .cnt-wrap{flex-direction:column;}
+  .cnt-total-col{
+    border-left:none;border-top:1px solid var(--line);
+    padding-left:0;padding-top:10px;margin-top:10px;
+    flex-direction:row;justify-content:space-between;align-items:center;
+  }
+  .cnt-total-col .count-total{font-size:26px;padding:0;}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 @media print{
