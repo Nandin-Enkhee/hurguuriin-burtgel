@@ -1,4 +1,3 @@
-
 import { db, state } from './state.js';
 import { dateStr, fridgeName } from './util.js';
 import { $, toast } from './ui.js';
@@ -62,6 +61,7 @@ export function checkCode(){
 }
 export function logout(){
   state.isAdmin=false;
+  state.salaryUnlocked=false;
   show("scrLogin");
   inputs.forEach(i=>i.value=""); inputs[0].focus();
 }
