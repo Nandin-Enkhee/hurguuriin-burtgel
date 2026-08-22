@@ -18,6 +18,7 @@ const drafts = {};
 function syncDraft(){
   const c=CN();
   if(!c.item) return;
+  if(c.editId) return;   /* хуучин бичилтийг засаж байхад шинэ ноорог үүсгэхгүй */
   if(c.vals.some(v=>f(v)>0)) drafts[c.item]=c.vals.slice();
   else delete drafts[c.item];
 }
@@ -44,14 +45,14 @@ registerScreen("scrCount", renderCountList);
 /* ---------- Тоолох дэлгэц ---------- */
 export function openCountItem(id){
   const d=drafts[id];
-  state.count={ item:id, vals: d ? d.slice() : [""] };
+  state.count={ item:id, vals: d ? d.slice() : [""], editId:null };
   renderCountEntry();
   show("scrCountEntry");
 }
 export function renderCountEntry(){
   const c=CN();
   if(!c.item){ show("scrCount"); return; }
-  $("cntTitle").textContent="Тоолох · "+itemName(c.item);
+  $("cntTitle").textContent = (c.editId?"Засах · ":"Тоолох · ")+itemName(c.item);
   renderCountRows();
   renderCountTotal();
   renderCountHist();
@@ -123,9 +124,32 @@ export function renderCountHist(){
       <span class="item-name">${dateStr(new Date(x.ts))} ${timeStr(new Date(x.ts))}
         <small>${esc((x.entries||[]).join(" + "))}${x.note?" · ("+esc(x.note)+")":""}</small></span>
       <span class="item-val">${num(x.total)}
-        <button class="icon-btn" style="padding:5px 9px;font-size:13px;margin-left:6px"
+        <button class="icon-btn pri" style="padding:5px 9px;font-size:13px;margin-left:6px"
+                onclick="editCount('${x.id}')">Засах</button>
+        <button class="icon-btn moss" style="padding:5px 9px;font-size:13px;margin-left:4px"
+                onclick="redoCount()">Дахин бодох</button>
+        <button class="icon-btn" style="padding:5px 9px;font-size:13px;margin-left:4px"
                 onclick="delCount('${x.id}')">✕</button></span>
     </div>`).join("") : `<div class="empty">Өмнөх тооллого алга</div>`;
+}
+
+/* Хуучин бичсэн тооллогыг яг тэр тоонуудаар нь ачааллаж засварлана.
+   Хадгалахад шинэ бичилт үүсгэхгүй, яг энэ бичилтийг дарж бичнэ. */
+export function editCount(id){
+  const rec=(db.counts||[]).find(x=>x.id===id);
+  if(!rec) return;
+  state.count={ item:rec.item, vals: rec.entries && rec.entries.length ? rec.entries.map(String) : [""], editId:rec.id };
+  renderCountEntry();
+}
+/* Одоогийн бичиж буй тоонуудыг цэвэрлэж, засварын горимыг цуцлаад
+   эхнээс нь дахин тоолуулна. */
+export function redoCount(){
+  const c=CN();
+  state.count={ item:c.item, vals:[""], editId:null };
+  renderCountEntry();
+  const box=$("cntRows");
+  const first=box ? box.querySelector("input") : null;
+  if(first) first.focus();
 }
 
 /* ---------- Хадгалах ---------- */
@@ -142,15 +166,26 @@ export function saveCount(){
   state.busy.count=true;
   const btn=$("cntSave"); if(btn) btn.disabled=true;
   try{
-    const rec={ id:uid(), ts:Date.now(), item:c.item,
-                entries:nums.map(num), total:num(nums.reduce((s,n)=>s+n,0)),
-                note };
-    db.counts.push(rec);
-    saveLocal();
-    fbSet("counts",rec.id,rec);
-    toast("Тооллого хадгалагдлаа · "+num(rec.total));
+    if(c.editId){
+      const rec=(db.counts||[]).find(x=>x.id===c.editId);
+      if(!rec){ toast("Бичилт олдсонгүй"); return; }
+      rec.entries=nums.map(num);
+      rec.total=num(nums.reduce((s,n)=>s+n,0));
+      rec.note=note;
+      saveLocal();
+      fbSet("counts",rec.id,rec);
+      toast("Тооллого засагдлаа · "+num(rec.total));
+    }else{
+      const rec={ id:uid(), ts:Date.now(), item:c.item,
+                  entries:nums.map(num), total:num(nums.reduce((s,n)=>s+n,0)),
+                  note };
+      db.counts.push(rec);
+      saveLocal();
+      fbSet("counts",rec.id,rec);
+      toast("Тооллого хадгалагдлаа · "+num(rec.total));
+    }
     delete drafts[c.item];
-    state.count={ item:c.item, vals:[""] };
+    state.count={ item:c.item, vals:[""], editId:null };
     renderCountEntry();
   } finally {
     state.busy.count=false;
@@ -162,6 +197,7 @@ export function delCount(id){
   if(!confirm("Энэ тооллогыг устгах уу?")) return;
   db.counts=(db.counts||[]).filter(x=>x.id!==id);
   saveLocal(); fbDel("counts",id);
+  /* Устгасан бичилтийг яг одоо засварлаж байсан бол горимыг цуцална */
+  if(CN().editId===id){ state.count={ item:CN().item, vals:[""], editId:null }; renderCountEntry(); return; }
   renderCountHist();
-  toast("Устгалаа");
 }
