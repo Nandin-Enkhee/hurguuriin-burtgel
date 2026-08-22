@@ -90,7 +90,7 @@ export function startSync(){
     }, e=>console.error(e));
   });
 
-  ["log","receipts","purchases","audits","settlements","wagepays","works","attend"].forEach(coll=>{
+  ["log","receipts","purchases","audits","settlements","wagepays","works","attend","counts"].forEach(coll=>{
     F.onSnapshot(F.collection(F.fs,coll), snap=>{
       db[coll]=snap.docs.map(d=>d.data());
       normalize(); saveLocal(); refreshActive();
