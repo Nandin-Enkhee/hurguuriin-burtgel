@@ -33,6 +33,7 @@ export function openOut(){
   renderOut(); show("scrOut");
 }
 export function editCurrentReceipt(){
+  if(state.receipt.kind==="purchase") return;
   const rc=db.receipts.find(x=>x.id===state.receipt.current);
   if(!rc){ show("scrHome"); return; }
   state.curFridge=rc.fridge;
