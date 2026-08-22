@@ -310,8 +310,16 @@
     <div id="salBody"></div>
   </div>
   <div class="card" id="salAddCard" style="display:none">
-    <button class="btn btn-in" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
+    <h3>Ажилчин нэмэх</h3>
+    <div class="add-row">
+      <input type="text" id="salNewWorkerName" placeholder="Шинэ ажилчны нэр">
+      <button onclick="addWorkerInline()">Нэмэх</button>
+    </div>
+    <button class="btn btn-in" style="margin-top:16px" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
     <button class="btn btn-sm" style="margin-top:10px" onclick="openAttend()">Тогтмол цалинтай ажилчдын ирц</button>
+  </div>
+  <div class="card" id="salUnlockCard">
+    <button class="btn btn-sm" onclick="unlockSalaryAdmin()">Цалин бодох</button>
   </div>
 </div>
 
@@ -482,6 +490,10 @@
       <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center"></div>
     <div class="edit-row"><span class="nm">Админы код</span>
       <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
+    <div class="edit-row"><span class="nm">Цалингийн код</span>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinSalary" style="max-width:110px;text-align:center"></div>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Цалингийн код нь "Цалин" хэсэгт "Цалин бодох" товчоор орж, ажилчин нэмэх,
+      ажлын бүртгэл нэмэх, урьдчилгаа, ирц удирдах эрх нээдэг — бусад хэсэгт хандах эрх өгөхгүй.</p>
     <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
   </div>
 </div>
