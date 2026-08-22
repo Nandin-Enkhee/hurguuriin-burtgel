@@ -288,13 +288,16 @@ export function saveCompany(){
 }
 
 /* ---------- Код ---------- */
-export function openCodes(){ $("pinWorker").value=db.pin; $("pinAdmin").value=db.adminPin; show("scrCodes"); }
+export function openCodes(){
+  $("pinWorker").value=db.pin; $("pinAdmin").value=db.adminPin; $("pinSalary").value=db.salaryPin;
+  show("scrCodes");
+}
 export function savePins(){
   if(!requireOnline()) return;
-  const p=$("pinWorker").value.trim(), a=$("pinAdmin").value.trim();
-  if(!/^\d{4}$/.test(p)||!/^\d{4}$/.test(a)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
-  if(p===a){ toast("Хоёр код өөр байх ёстой"); return; }
-  db.pin=p; db.adminPin=a; save(); toast("Код солигдлоо");
+  const p=$("pinWorker").value.trim(), a=$("pinAdmin").value.trim(), s=$("pinSalary").value.trim();
+  if(!/^\d{4}$/.test(p)||!/^\d{4}$/.test(a)||!/^\d{4}$/.test(s)){ toast("Код 4 оронтой тоо байх ёстой"); return; }
+  if(new Set([p,a,s]).size<3){ toast("Гурван код тус бүр өөр байх ёстой"); return; }
+  db.pin=p; db.adminPin=a; db.salaryPin=s; save(); toast("Код солигдлоо");
 }
 
 /* ---------- Нөөцлөх ----------
