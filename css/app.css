@@ -253,12 +253,12 @@ textarea{width:100%;padding:10px;font-size:13px;font-family:var(--mono);}
 }
 .cnt-total-col .count-total{font-size:28px;padding:0;line-height:1.1;word-break:break-word;}
 .cnt-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;
-  max-height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  display:flex;flex-direction:column;gap:7px;
+  height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   padding:2px 2px 4px;
 }
 .cnt-cell{
-  display:flex;align-items:center;gap:4px;
+  display:flex;align-items:center;gap:4px;flex-shrink:0;
   border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--paper);padding:4px 4px 4px 10px;
 }
 .cnt-cell input{
