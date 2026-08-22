@@ -62,7 +62,7 @@ export function renderCountRows(){
   const c=CN();
   $("cntRows").innerHTML = c.vals.map((v,i)=>`
     <div class="cnt-cell">
-      <input type="number" inputmode="decimal" enterkeyhint="next" placeholder="${i+1}" value="${esc(v)}"
+      <input type="number" inputmode="decimal" enterkeyhint="next" value="${esc(v)}"
              oninput="setCountVal(${i},this.value)" onkeydown="countKeydown(${i},event)">
       ${c.vals.length>1 ? `<button type="button" class="cnt-del" onclick="removeCountRow(${i})">✕</button>` : ""}
     </div>`).join("");
@@ -121,7 +121,7 @@ export function renderCountHist(){
   box.innerHTML = list.length ? list.map(x=>`
     <div class="item-row">
       <span class="item-name">${dateStr(new Date(x.ts))} ${timeStr(new Date(x.ts))}
-        <small>${esc((x.entries||[]).join(" + "))}${x.note?" · "+esc(x.note):""}</small></span>
+        <small>${esc((x.entries||[]).join(" + "))}${x.note?" · ("+esc(x.note)+")":""}</small></span>
       <span class="item-val">${num(x.total)}
         <button class="icon-btn" style="padding:5px 9px;font-size:13px;margin-left:6px"
                 onclick="delCount('${x.id}')">✕</button></span>
