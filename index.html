@@ -89,6 +89,7 @@
     <button class="btn" onclick="openFridge(2)" id="btnF2">2-р хөргүүр</button>
     <button class="btn" onclick="openBuy()" id="btnBuy">Гаднаас худалдаж авсан</button>
     <button class="btn" onclick="openSalary()">Цалин</button>
+    <button class="btn" onclick="openCount()">Тоолох</button>
     <button class="btn" onclick="openAdmin()" id="btnAdmin">Тохиргоо</button>
   </div>
   <button class="logout" onclick="logout()">Гарах</button>
@@ -379,6 +380,39 @@
     <div id="workTotal"></div>
   </div>
   <div class="save-wrap"><button class="btn btn-in" id="workSave" onclick="saveWork()">Хадгалах</button></div>
+</div>
+
+<!-- ============ ТООЛОХ ============ -->
+<div class="screen" id="scrCount">
+  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тоолох</h2></div>
+  <div class="card">
+    <h3>Ангилал сонгоно уу</h3>
+    <div class="scroll-box" id="countList"></div>
+  </div>
+</div>
+
+<div class="screen" id="scrCountEntry">
+  <div class="bar"><button class="back" onclick="openCount()">Буцах</button><h2 id="cntTitle">Тоолох</h2></div>
+  <div class="card">
+    <h3>Тоолсон тоонууд</h3>
+    <div id="cntRows"></div>
+    <div class="tool-row" style="margin-top:10px">
+      <button onclick="addCountRow()">＋ Тоо нэмэх</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Нийт дүн</h3>
+    <div id="cntTotal"></div>
+  </div>
+  <div class="card">
+    <h3>Тайлбар</h3>
+    <textarea id="cntNote" placeholder="Тайлбар бичих (заавал биш)" style="height:80px" oninput="setCountNote(this.value)"></textarea>
+  </div>
+  <div class="save-wrap"><button class="btn btn-in" id="cntSave" onclick="saveCount()">Хадгалах</button></div>
+  <div class="card">
+    <h3>Өмнөх тооллого</h3>
+    <div class="scroll-box" id="cntHist"></div>
+  </div>
 </div>
 
 <!-- ============ ТОХИРГОО ============ -->
