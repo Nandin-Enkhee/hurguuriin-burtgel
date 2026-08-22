@@ -126,8 +126,6 @@ export function renderCountHist(){
       <span class="item-val">${num(x.total)}
         <button class="icon-btn pri" style="padding:5px 9px;font-size:13px;margin-left:6px"
                 onclick="editCount('${x.id}')">Засах</button>
-        <button class="icon-btn moss" style="padding:5px 9px;font-size:13px;margin-left:4px"
-                onclick="redoCount('${x.id}')">Дахин бодох</button>
         <button class="icon-btn" style="padding:5px 9px;font-size:13px;margin-left:4px"
                 onclick="delCount('${x.id}')">✕</button></span>
     </div>`).join("") : `<div class="empty">Өмнөх тооллого алга</div>`;
@@ -140,18 +138,6 @@ export function editCount(id){
   if(!rec) return;
   state.count={ item:rec.item, vals: rec.entries && rec.entries.length ? rec.entries.map(String) : [""], editId:rec.id };
   renderCountEntry();
-}
-/* Одоогийн бичиж буй тоонуудыг цэвэрлэж, ЯГ ТЭР ХУУЧИН бичилтийг л
-   шинэ тоогоор дахин бодуулна — шинэ бичилт үүсгэхгүй, тайлбар нь
-   хэвээр үлдэнэ (Хадгалахад санал болгогдоно). */
-export function redoCount(id){
-  const rec=(db.counts||[]).find(x=>x.id===id);
-  if(!rec) return;
-  state.count={ item:rec.item, vals:[""], editId:rec.id };
-  renderCountEntry();
-  const box=$("cntRows");
-  const first=box ? box.querySelector("input") : null;
-  if(first) first.focus();
 }
 
 /* ---------- Хадгалах ---------- */
