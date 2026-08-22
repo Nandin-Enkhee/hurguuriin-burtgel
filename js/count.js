@@ -59,9 +59,11 @@ export function addCountRow(){
   CN().vals.push("");
   renderCountRows();
   renderCountTotal();
-  const inputs=$("cntRows").querySelectorAll("input");
+  const box=$("cntRows");
+  const inputs=box ? box.querySelectorAll("input") : [];
   const last=inputs[inputs.length-1];
   if(last) last.focus();
+  if(box) box.scrollTop=box.scrollHeight;
 }
 export function removeCountRow(i){
   const c=CN();
