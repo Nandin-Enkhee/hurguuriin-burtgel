@@ -8,10 +8,16 @@ import { esc, f, num, money, dayKey, monthKey, monthKeyOfIso,
          payUnitOf, uShort, rateOf, qtyFor, payFor, liveWorkers, workerName } from './util.js';
 import { $, toast } from './ui.js';
 import { show, registerScreen } from './router.js';
-import { fbSet, fbDel } from './sync.js';
+import { fbSet, fbDel, save } from './sync.js';
 import { requireOnline } from './auth.js';
 
 const S = () => state.salary;
+
+/* Бүрэн админ эсвэл Цалингийн тусгай кодоор орсон хүн — хоёулаа
+   ажлын бүртгэл нэмэх, урьдчилгаа, ирц удирдах эрхтэй. Гэхдээ энэ
+   эрх зөвхөн Цалин хэсэгт хамаарах бөгөөд Тохиргоо, Худалдан авах
+   зэрэг бусад хэсэгт хандах эрх өгөхгүй. */
+function canManageSalary(){ return state.isAdmin || state.salaryUnlocked; }
 
 /* ===================== Нийтлэг тооцоо ===================== */
 function monthOf(){ return S().month || isoMonth(); }
@@ -60,13 +66,34 @@ export function openSalary(){
   if(!requireOnline()) return;
   S().month = S().month || isoMonth();
   $("salMonth").value=S().month;
-  $("salAddCard").style.display = state.isAdmin ? "block" : "none";
   renderSalary(); show("scrSalary");
 }
 export function setSalMonth(v){ S().month = v || isoMonth(); renderSalary(); }
 
+/* Энгийн ажилчнаар орсон хүн Цалин хэсэгт "Цалин бодох" товчоор
+   тусгай (админаас өөр) 4 оронтой кодоо оруулж, ажилчин нэмэх,
+   ажлын бүртгэл нэмэх, урьдчилгаа нэмэх, ирц тэмдэглэх зэрэг
+   Цалин хэсгийн эрхийг нээж болно. Энэ нь бүрэн админ болгохгүй —
+   Тохиргоо, Худалдан авах зэрэг бусад хэсэг хаалттай хэвээр үлдэнэ. */
+export function unlockSalaryAdmin(){
+  if(canManageSalary()){ renderSalary(); return; }
+  if(!requireOnline()) return;
+  const v=prompt("Цалин бодох — тусгай 4 оронтой кодоо оруулна уу");
+  if(v===null) return;
+  if(!/^\d{4}$/.test(v.trim()) || v.trim()!==db.salaryPin){
+    toast("Код буруу байна");
+    return;
+  }
+  state.salaryUnlocked=true;
+  toast("Цалингийн эрх нээгдлээ");
+  renderSalary();
+}
+
 export function renderSalary(){
   $("salTitle").textContent=monthLabel();
+  const uc=$("salUnlockCard"), ac=$("salAddCard");
+  if(uc) uc.style.display = canManageSalary() ? "none" : "block";
+  if(ac) ac.style.display = canManageSalary() ? "block" : "none";
   const ws=liveWorkers();
   if(!ws.length){ $("salBody").innerHTML=`<div class="empty">Ажилчин бүртгээгүй байна</div>`; return; }
 
@@ -139,11 +166,11 @@ export function renderWorkerDetail(){
         <thead><tr><th>Огноо</th><th class="num">Өдрийн хөлс</th><th></th></tr></thead>
         <tbody>${days.map(d=>`<tr><td class="nm">${colLabel(d)}</td>
           <td class="amt">${money(e.byDay[d])}</td>
-          <td>${state.isAdmin&&att[d]?`<button class="icon-btn" style="padding:4px 8px;font-size:12px"
+          <td>${canManageSalary()&&att[d]?`<button class="icon-btn" style="padding:4px 8px;font-size:12px"
                  onclick="delAttend('${att[d]}')">✕</button>`:""}</td></tr>`).join("")}
           <tr class="sum"><td>${days.length} өдөр · нийт</td><td class="amt">${money(e.total)}</td><td></td></tr>
         </tbody></table></div>
-      ${state.isAdmin?`<button class="btn btn-sm" style="margin-top:12px"
+      ${canManageSalary()?`<button class="btn btn-sm" style="margin-top:12px"
           onclick="openAttend()">Ирц тэмдэглэх</button>`:""}</div>`;
   }else{
     const items={};
@@ -179,11 +206,11 @@ export function renderWorkerDetail(){
         <td class="nm">${dateStr(new Date(x.ts))}</td>
         <td class="dim">${esc(x.note||"—")}</td>
         <td class="amt" style="color:var(--rust)">−${money(x.amount)}</td>
-        <td>${state.isAdmin?`<button class="icon-btn" style="padding:4px 8px;font-size:12px"
+        <td>${canManageSalary()?`<button class="icon-btn" style="padding:4px 8px;font-size:12px"
                onclick="delAdvance('${x.id}')">✕</button>`:""}</td></tr>`).join("")}
       </tbody></table></div>`
     : `<div class="empty">Урьдчилгаа аваагүй байна</div>`}
-    ${state.isAdmin?`<button class="btn btn-sm" style="margin-top:12px"
+    ${canManageSalary()?`<button class="btn btn-sm" style="margin-top:12px"
         onclick="addAdvance('${w.id}')">Урьдчилгаа нэмэх</button>`:""}</div>`;
 
   /* 3. Дүн */
@@ -195,6 +222,20 @@ export function renderWorkerDetail(){
     <div class="total-line"><span>Олгох дүн</span><b>${money(e.total-adv)}</b></div></div>`;
 
   $("wdBody").innerHTML = totalBlock + itemBlock + advBlock;
+}
+
+/* ===================== Ажилчин нэмэх (Цалин хэсгээс шууд) ===================== */
+export function addWorkerInline(){
+  if(!requireOnline()) return;
+  const el=$("salNewWorkerName");
+  const n=(el.value||"").trim();
+  if(!n){ toast("Ажилчны нэрийг бичнэ үү"); return; }
+  const rates={}; db.items.forEach(i=>{ rates[i.id]=+i.defRate||0; });
+  db.workers.push({id:uid(), name:n, rates, payType:"piece", salary:0});
+  el.value="";
+  save();
+  renderSalary();
+  toast(n+" нэмэгдлээ");
 }
 
 /* ===================== Урьдчилгаа ===================== */
