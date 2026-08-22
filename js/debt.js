@@ -11,14 +11,24 @@ import { requireOnline } from './auth.js';
 
 const DB_ = () => state.debt;
 
-export function openDebt(){
+/* Хаанаас нээгдснийг санаж, Буцах товч тэр газар руугаа буцаана.
+   "dash" — Хяналтын самбараас, эсрэг тохиолдолд Тохиргооноос. */
+let cameFrom = "admin";
+
+export function openDebt(from){
   if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   if(!requireOnline()) return;
+  cameFrom = from || "admin";
   DB_().openOrg=null;
   DB_().month = DB_().month || isoMonth();
   DB_().date  = DB_().date  || isoStr();
   $("debtSearch").value=DB_().search;
   syncDebtPicker(); renderDebt(); show("scrDebt");
+}
+export function closeDebt(){
+  if(cameFrom==="dash" && window.openDash){ window.openDash(); return; }
+  if(window.openAdmin){ window.openAdmin(); return; }
+  show("scrAdmin");
 }
 /* Он сар, тодорхой өдөр, эсвэл бүх хугацаагаар шүүнэ */
 function syncDebtPicker(){
