@@ -92,7 +92,7 @@ function countTotal(){ return CN().vals.reduce((s,v)=>s+f(v),0); }
 export function renderCountTotal(){
   const has=CN().vals.some(v=>f(v)>0);
   $("cntTotal").innerHTML = has
-    ? `<div class="count-total">${num(countTotal())}</div>`
+    ? `<div class="count-total">Нийт= ${num(countTotal())}</div>`
     : `<div class="empty">Тоолсон тоогоо оруулна уу</div>`;
 }
 
