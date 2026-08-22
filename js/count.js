@@ -127,7 +127,7 @@ export function renderCountHist(){
         <button class="icon-btn pri" style="padding:5px 9px;font-size:13px;margin-left:6px"
                 onclick="editCount('${x.id}')">Засах</button>
         <button class="icon-btn moss" style="padding:5px 9px;font-size:13px;margin-left:4px"
-                onclick="redoCount()">Дахин бодох</button>
+                onclick="redoCount('${x.id}')">Дахин бодох</button>
         <button class="icon-btn" style="padding:5px 9px;font-size:13px;margin-left:4px"
                 onclick="delCount('${x.id}')">✕</button></span>
     </div>`).join("") : `<div class="empty">Өмнөх тооллого алга</div>`;
@@ -141,11 +141,13 @@ export function editCount(id){
   state.count={ item:rec.item, vals: rec.entries && rec.entries.length ? rec.entries.map(String) : [""], editId:rec.id };
   renderCountEntry();
 }
-/* Одоогийн бичиж буй тоонуудыг цэвэрлэж, засварын горимыг цуцлаад
-   эхнээс нь дахин тоолуулна. */
-export function redoCount(){
-  const c=CN();
-  state.count={ item:c.item, vals:[""], editId:null };
+/* Одоогийн бичиж буй тоонуудыг цэвэрлэж, ЯГ ТЭР ХУУЧИН бичилтийг л
+   шинэ тоогоор дахин бодуулна — шинэ бичилт үүсгэхгүй, тайлбар нь
+   хэвээр үлдэнэ (Хадгалахад санал болгогдоно). */
+export function redoCount(id){
+  const rec=(db.counts||[]).find(x=>x.id===id);
+  if(!rec) return;
+  state.count={ item:rec.item, vals:[""], editId:rec.id };
   renderCountEntry();
   const box=$("cntRows");
   const first=box ? box.querySelector("input") : null;
@@ -161,7 +163,8 @@ export function saveCount(){
   const nums=c.vals.map(f).filter(n=>n>0);
   if(!nums.length){ toast("Тоолсон тоогоо оруулна уу"); return; }
 
-  const note=(prompt("Тайлбар нэмэх үү? (заавал биш)","")||"").trim();
+  const existingNote = c.editId ? (((db.counts||[]).find(x=>x.id===c.editId)||{}).note || "") : "";
+  const note=(prompt("Тайлбар нэмэх үү? (заавал биш)",existingNote)||"").trim();
 
   state.busy.count=true;
   const btn=$("cntSave"); if(btn) btn.disabled=true;
