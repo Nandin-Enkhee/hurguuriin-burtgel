@@ -220,7 +220,6 @@ select.opt-sel{padding:9px 8px;font-size:15px;font-weight:600;}
 }
 .icon-btn:active{background:var(--rust-soft);}
 .icon-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;}
-.icon-btn.moss{background:var(--moss);border-color:var(--moss);color:#fff;}
 .add-row{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
 .add-row input{flex:1;min-width:0;padding:12px 10px;font-size:16px;}
 .add-row button{padding:12px 18px;border:1px solid var(--blue);border-radius:var(--r-sm);background:var(--blue);color:#fff;font:inherit;font-size:16px;font-weight:650;cursor:pointer;}
