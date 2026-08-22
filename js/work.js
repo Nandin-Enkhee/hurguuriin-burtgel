@@ -23,7 +23,7 @@ registerPicker("work",{
 
 export function openWork(){
   if(!requireOnline()) return;
-  if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
+  if(!state.isAdmin && !state.salaryUnlocked){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   state.work={ items:{}, worker:null, date:(state.salary.date||isoStr()) };
   const d=$("workDate"); d.value=W().date; d.max=isoStr();
   renderWork(); show("scrWork");
@@ -112,7 +112,7 @@ function fixedWorkers(){ return liveWorkers().filter(w=>w.payType==="fixed"); }
 
 export function openAttend(){
   if(!requireOnline()) return;
-  if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
+  if(!state.isAdmin && !state.salaryUnlocked){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
   const d0 = state.salary.date || isoStr();
   state.attend={ date:d0, workers:markedOn(d0) };
   const d=$("attDate"); d.value=A().date; d.max=isoStr();
