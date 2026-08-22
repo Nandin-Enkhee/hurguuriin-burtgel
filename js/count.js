@@ -11,6 +11,17 @@ import { requireOnline } from './auth.js';
 
 const CN = () => state.count;
 
+/* Хадгалаагүйгээр буцсан тооллого — ангилал тус бүрээр түр санахад.
+   Зөвхөн энэ нэвтрэлтийн хугацаанд амьдрах бөгөөд Хадгалах дарахад,
+   эсвэл бүх тоо хоосорвол устана. */
+const drafts = {};
+function syncDraft(){
+  const c=CN();
+  if(!c.item) return;
+  if(c.vals.some(v=>f(v)>0)) drafts[c.item]=c.vals.slice();
+  else delete drafts[c.item];
+}
+
 /* ---------- Ангилал сонгох жагсаалт ---------- */
 export function openCount(){
   if(!requireOnline()) return;
@@ -24,7 +35,7 @@ export function renderCountList(){
   box.innerHTML = items.length ? items.map(it=>`
     <div class="item-row" style="cursor:pointer" onclick="openCountItem('${it.id}')">
       <span class="item-name">${esc(it.name)}</span>
-      <span class="item-val">›</span>
+      <span class="item-val">${drafts[it.id]?`<span class="pill pill-due">Тоолж байна</span> `:""}›</span>
     </div>`).join("")
     : `<div class="empty">Бараа нэмээгүй байна.<br>Тохиргоо → Бараа, үнэ хэсгээс нэмнэ үү.</div>`;
 }
@@ -32,7 +43,8 @@ registerScreen("scrCount", renderCountList);
 
 /* ---------- Тоолох дэлгэц ---------- */
 export function openCountItem(id){
-  state.count={ item:id, vals:[""] };
+  const d=drafts[id];
+  state.count={ item:id, vals: d ? d.slice() : [""] };
   renderCountEntry();
   show("scrCountEntry");
 }
@@ -71,10 +83,12 @@ export function removeCountRow(i){
   c.vals.splice(i,1);
   renderCountRows();
   renderCountTotal();
+  syncDraft();
 }
 export function setCountVal(i,v){
   CN().vals[i]=v;
   renderCountTotal();
+  syncDraft();
 }
 /* Тоогоо бичээд Enter дархад: сүүлийн мөр дээр бөгөөд утгатай бол
    шинэ мөр нэмээд шууд идэвхжүүлнэ — гараар "+ Тоо нэмэх" дарах шаардлагагүй. */
@@ -135,6 +149,7 @@ export function saveCount(){
     saveLocal();
     fbSet("counts",rec.id,rec);
     toast("Тооллого хадгалагдлаа · "+num(rec.total));
+    delete drafts[c.item];
     state.count={ item:c.item, vals:[""] };
     renderCountEntry();
   } finally {
