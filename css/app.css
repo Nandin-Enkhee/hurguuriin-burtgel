@@ -243,6 +243,7 @@ textarea{width:100%;padding:10px;font-size:13px;font-family:var(--mono);}
   font-size:15px;font-weight:600;color:var(--muted);
 }
 .total-line b{font-size:21px;font-weight:700;color:var(--blue-ink);letter-spacing:-.02em;}
+.count-total{text-align:center;font-size:44px;font-weight:800;color:var(--blue-ink);letter-spacing:-.02em;padding:10px 0 2px;font-variant-numeric:tabular-nums;}
 
 .calc-w{border-bottom:1px solid var(--line-soft);padding:12px 0;}
 .calc-w:first-child{padding-top:0;}
