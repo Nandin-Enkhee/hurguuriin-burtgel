@@ -22,7 +22,7 @@ export function defaults(){
     ],
     workers:[{id:uid(),name:"Ажилчин 1",rates:{},payType:"piece",salary:0}],
     partners:[], persons:[], receipts:[], purchases:[], log:[], audits:[],
-    settlements:[], wagepays:[], works:[], attend:[]
+    settlements:[], wagepays:[], works:[], attend:[], counts:[]
   };
 }
 function itemDefaults(name,track){
@@ -51,6 +51,7 @@ export function normalize(){
   db.wagepays   = db.wagepays   || [];
   db.works      = db.works      || [];
   db.attend     = db.attend     || [];   /* тогтмол цалинтай ажилчдын ирц */
+  db.counts     = db.counts     || [];   /* тооллого */
   db.items      = db.items      || [];
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
@@ -115,5 +116,6 @@ export const state = {
   partyOpen:null,
   fiFridge:1,
   receipt:{ current:null },
-  busy:{ entry:false, buy:false, receipt:false, work:false, attend:false }
+  count:{ item:null, vals:[""], note:"" },
+  busy:{ entry:false, buy:false, receipt:false, work:false, attend:false, count:false }
 };
