@@ -1,4 +1,3 @@
-
 const renderers = {};
 
 export function registerScreen(id, render){ renderers[id] = render; }
