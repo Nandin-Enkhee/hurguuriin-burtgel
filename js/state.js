@@ -8,7 +8,7 @@ export function uid(){ return Math.random().toString(36).slice(2,9); }
 
 export function defaults(){
   return {
-    pin:"1234", adminPin:"9999", lastIssuer:null, lastRecorder:null, receiptNo:0, purchaseNo:0,
+    pin:"1234", adminPin:"9999", salaryPin:"5678", lastIssuer:null, lastRecorder:null, receiptNo:0, purchaseNo:0,
     company:{ name:"Дэлгэрэх Төв ХХК", phone:"", reg:"", bank:"", account:"", accountName:"" },
     fridges:[{id:1,name:"1-р хөргүүр"},{id:2,name:"2-р хөргүүр"}],
     items:[
@@ -55,6 +55,7 @@ export function normalize(){
   db.workers    = db.workers    || [];
   db.receiptNo  = db.receiptNo  || 0;
   db.purchaseNo = db.purchaseNo || 0;
+  db.salaryPin  = db.salaryPin  || "5678";
   db.company    = Object.assign({}, defaults().company, db.company || {});
   db.fridges    = (db.fridges && db.fridges.length) ? db.fridges : defaults().fridges;
 
@@ -98,6 +99,7 @@ export function loadLocal(){
 /* Дэлгэц хооронд дамжих түр төлөв. Модуль бүр өөрийн талбарыг эзэмшинэ. */
 export const state = {
   isAdmin:false,
+  salaryUnlocked:false,
   curFridge:1,
   entry:{ items:{}, recorder:null, date:null },
   work:{ items:{}, worker:null, date:null },
