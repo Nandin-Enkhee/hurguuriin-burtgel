@@ -39,7 +39,7 @@ export function fbDel(coll,id){
    хадгалдаг — хоёр хүн зэрэг ажиллахад бие биенийхээ бичлэгийг дарж бичихгүй. */
 export function pushSettings(){
   fbSet("app","config",{
-    pin:db.pin, adminPin:db.adminPin, company:db.company, fridges:db.fridges,
+    pin:db.pin, adminPin:db.adminPin, salaryPin:db.salaryPin, company:db.company, fridges:db.fridges,
     receiptNo:db.receiptNo, purchaseNo:db.purchaseNo,
     lastIssuer:db.lastIssuer||null, lastRecorder:db.lastRecorder||null
   });
@@ -69,7 +69,7 @@ export function startSync(){
   F.onSnapshot(F.doc(F.fs,"app","config"), snap=>{
     if(!snap.exists()){ pushSettings(); return; }
     const d=snap.data();
-    db.pin=d.pin||db.pin; db.adminPin=d.adminPin||db.adminPin;
+    db.pin=d.pin||db.pin; db.adminPin=d.adminPin||db.adminPin; db.salaryPin=d.salaryPin||db.salaryPin;
     db.company=d.company||db.company; db.fridges=d.fridges||db.fridges;
     db.receiptNo=d.receiptNo||0; db.purchaseNo=d.purchaseNo||0;
     db.lastIssuer=d.lastIssuer||null; db.lastRecorder=d.lastRecorder||null;
