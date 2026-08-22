@@ -9,8 +9,16 @@ import { registerPicker, renderPicker, qtyOf } from './picker.js';
 import { fbSet, save, pushSettings, nextNo } from './sync.js';
 import { requireOnline } from './auth.js';
 import { openFridge } from './fridge.js';
+import { drawPurchaseReceipt } from './receipt.js';
 
 const B = () => state.buy;
+
+/* ---------- Гаднаас авах аргаа сонгох ---------- */
+export function openBuyChoice(){
+  if(!requireOnline()) return;
+  if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
+  show("scrBuyChoice");
+}
 
 registerPicker("buy",{
   boxId:"buyItems",
@@ -151,5 +159,111 @@ export async function saveBuy(){
   } finally {
     state.busy.buy=false;
     const x=$("buySave"); if(x){ x.disabled=false; x.textContent=label||"Хадгалах"; }
+  }
+}
+
+/* ==================== Шууд хөргүүрт оруулах ====================
+   Ангилал сонгохгүйгээр, юу авснаа гараар бичээд, тоо, үнийн дүнгээ
+   оруулаад шууд өглөгт бүртгэнэ. Хөргүүрийн бараа тус бүрийн
+   үлдэгдэлд (ангилалтай холбоотой тул) нөлөөлөхгүй — зөвхөн
+   өглөг, баримтын түүхэнд бичигдэнэ. */
+const QB = () => state.qbuy;
+
+export function openQuickBuy(){
+  if(!requireOnline()) return;
+  if(!state.isAdmin){ toast("Энэ хэсэг зөвхөн админд нээлттэй"); return; }
+  state.qbuy={ date:isoStr(), supplier:null, supplierKind:null, item:"", qty:"", price:"" };
+  const d=$("qbDate"); d.value=QB().date; d.max=isoStr();
+  $("qbsName").value=""; $("qbsReg").value=""; $("qbsPhone").value="";
+  $("qbpName").value=""; $("qbpPhone").value="";
+  $("qbItem").value=""; $("qbQty").value=""; $("qbPrice").value="";
+  renderQuickBuy(); show("scrQuickBuy");
+}
+export function setQbDate(v){ QB().date = v || isoStr(); }
+export function setQbItem(v){ QB().item=v; }
+export function setQbQty(v){ QB().qty=v; renderQbTotal(); }
+export function setQbPrice(v){ QB().price=v; renderQbTotal(); }
+
+onChoose.qbsupplier = id => {
+  const q=QB();
+  if(id==="__kind_person"){ q.supplierKind="person"; q.supplier=null; renderQuickBuy(); return; }
+  if(id==="__kind_org")   { q.supplierKind="org";    q.supplier=null; renderQuickBuy(); return; }
+  if(id==="__back")       { q.supplierKind=null;     q.supplier=null; renderQuickBuy(); return; }
+  q.supplier=id; renderQuickBuy();
+  if(id==="__addorg")    setTimeout(()=>$("qbsName").focus(),50);
+  if(id==="__addperson") setTimeout(()=>$("qbpName").focus(),50);
+};
+export function addQbOrgInline(){
+  if(!requireOnline()) return;
+  const n=$("qbsName").value.trim();
+  if(!n){ toast("Байгууллагын нэрийг бичнэ үү"); return; }
+  const p={id:uid(),name:n,reg:$("qbsReg").value.trim(),phone:$("qbsPhone").value.trim()};
+  db.partners.push(p); save();
+  $("qbsName").value=""; $("qbsReg").value=""; $("qbsPhone").value="";
+  QB().supplier=p.id; renderQuickBuy();
+  toast(n+" нэмэгдэж сонгогдлоо");
+}
+export function addQbPersonInline(){
+  if(!requireOnline()) return;
+  const n=$("qbpName").value.trim();
+  if(!n){ toast("Хувь хүний нэрийг бичнэ үү"); return; }
+  db.persons=db.persons||[];
+  const p=db.persons.find(x=>x.name.toLowerCase()===n.toLowerCase())
+       || {id:uid(),name:n,phone:$("qbpPhone").value.trim()};
+  if(db.persons.indexOf(p)<0) db.persons.push(p);
+  else if(!p.phone) p.phone=$("qbpPhone").value.trim();
+  save();
+  $("qbpName").value=""; $("qbpPhone").value="";
+  QB().supplier=p.id; QB().supplierKind="person"; renderQuickBuy();
+  toast(n+" нэмэгдэж сонгогдлоо");
+}
+export function renderQuickBuy(){
+  const q=QB();
+  $("sel_qbsupplier").innerHTML=selectHTML("qbsupplier",partyOptions(q.supplierKind,db.partners,db.persons),q.supplier,partyPlaceholder(q.supplierKind));
+  $("qbOrgBox").style.display    = q.supplier==="__addorg" ? "block" : "none";
+  $("qbPersonBox").style.display = q.supplier==="__addperson" ? "block" : "none";
+  renderQbTotal();
+}
+function qbTotal(){ return f(QB().qty)*f(QB().price); }
+export function renderQbTotal(){
+  $("qbTotal").innerHTML=`<div class="total-line"><span>Нийт дүн</span><b>${money(qbTotal())}</b></div>`;
+}
+
+export async function saveQuickBuy(){
+  if(!requireOnline()) return;
+  if(state.busy.qbuy) return;
+  const q=QB();
+  const name=(q.item||"").trim();
+  const qty=f(q.qty), price=f(q.price);
+  if(!name){ toast("Юу авснаа бичнэ үү"); return; }
+  if(qty<=0){ toast("Тоо хэмжээгээ оруулна уу"); return; }
+  if(price<=0){ toast("Үнийн дүнгээ оруулна уу"); return; }
+  if(!q.supplier || q.supplier==="__addorg" || q.supplier==="__addperson"){ toast("Хэнээс авснаа сонгоно уу"); return; }
+
+  state.busy.qbuy=true;
+  const btn=$("qbSave"); const label=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="Хадгалж байна…"; }
+  try{
+    const sup = q.supplierKind==="person"
+      ? (p=>({name:p.name,reg:"",phone:p.phone||"",type:"person",pid:p.id}))(db.persons.find(x=>x.id===q.supplier)||{name:"—",phone:""})
+      : (p=>({name:p.name,reg:p.reg||"",phone:p.phone||"",type:"org",pid:p.id}))(db.partners.find(x=>x.id===q.supplier));
+
+    const ts=tsOfIso(q.date);
+    const line={ item:null, name, unit:"kg", qty:num(qty), kg:0, pcs:0, perSack:0, sacks:0, price:num(price) };
+    const total=num(qty*price);
+
+    const n=await nextNo("purchaseNo");
+    db.purchaseNo=n;
+    const pu={ id:uid(), no:("000000"+n).slice(-6), ts, fridge:state.curFridge||1,
+               supplier:sup, lines:[line], total, paid:false, paidTs:null };
+    db.purchases.push(pu);
+    saveLocal();
+    fbSet("purchases",pu.id,pu);
+    pushSettings();
+    toast(`ХАВ-${pu.no} бүртгэгдлээ · ${money(total)} өглөг`);
+    drawPurchaseReceipt(pu);
+  } finally {
+    state.busy.qbuy=false;
+    const x=$("qbSave"); if(x){ x.disabled=false; x.textContent=label||"Хадгалах"; }
   }
 }
