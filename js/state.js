@@ -116,6 +116,6 @@ export const state = {
   partyOpen:null,
   fiFridge:1,
   receipt:{ current:null },
-  count:{ item:null, vals:[""], note:"" },
+  count:{ item:null, vals:[""] },
   busy:{ entry:false, buy:false, receipt:false, work:false, attend:false, count:false }
 };
