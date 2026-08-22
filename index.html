@@ -1,565 +1,387 @@
-<!DOCTYPE html>
-<html lang="mn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#152941">
-<title>Хөргүүрийн бүртгэл</title>
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
-<link rel="stylesheet" href="css/app.css">
-<!-- ================= FIREBASE ТОХИРГОО ================= -->
-<script type="module">
-  const firebaseConfig = {
-    apiKey: "AIzaSyDzWS8xTZR0mgWwpRFsqoIJ-FBpl5zt_oQ",
-    authDomain: "hurguuriin-burtgel.firebaseapp.com",
-    projectId: "hurguuriin-burtgel",
-    storageBucket: "hurguuriin-burtgel.firebasestorage.app",
-    messagingSenderId: "437875124772",
-    appId: "1:437875124772:web:8fe460bc5cfa3cada146b1"
-  };
+:root{
+  --navy:#152941;
+  --navy-2:#1d3a5c;
+  --blue:#2f5c8a;
+  --blue-dark:#24486d;
+  --blue-ink:#1b3b5c;
+  --cream:#fcf8f1;
+  --paper:#ffffff;
+  --line:#e6dcc8;
+  --line-soft:#f0e9dc;
+  --rust:#a34a32;
+  --rust-soft:#f6e5e0;
+  --moss:#2c6b4b;
+  --moss-soft:#e2efe7;
+  --gold:#b4832b;
+  --ink:#1c2b3a;
+  --muted:#78879a;
 
-  window.setSyncState && window.setSyncState("connecting");
-  if(firebaseConfig.projectId){
-    const V="https://www.gstatic.com/firebasejs/10.12.0/";
-    const [{initializeApp},{getAuth,signInAnonymously,onAuthStateChanged},FS] = await Promise.all([
-      import(V+"firebase-app.js"),
-      import(V+"firebase-auth.js"),
-      import(V+"firebase-firestore.js")
-    ]);
-    const app = initializeApp(firebaseConfig);
-    let fs;
-    try{
-      fs = FS.initializeFirestore(app,{localCache:FS.persistentLocalCache({tabManager:FS.persistentMultipleTabManager()})});
-    }catch(e){ fs = FS.getFirestore(app); }
-    window.FB = { fs, doc:FS.doc, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
-                  collection:FS.collection, onSnapshot:FS.onSnapshot, runTransaction:FS.runTransaction };
-    const auth = getAuth(app);
-    onAuthStateChanged(auth, u=>{
-      /* Энэ төхөөрөмжийн дугаар — Firestore дүрэмд зөвшөөрөх жагсаалтад
-         нэмэхэд хэрэглэнэ. Хөтчийн санах ойд үлддэг тул тогтмол. */
-      window.__uid = u ? u.uid : null;
-      if(u && window.startSync) window.startSync();
-    });
-    signInAnonymously(auth).catch(e=>{
-      console.error("Firebase auth алдаа:",e);
-      window.setSyncState && window.setSyncState(
-        String(e && e.code).indexOf("unauthorized-domain")>=0 ? "domain" : "err");
-    });
-  }
-</script>
-</head>
-<body>
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+  --sp:16px;
+  --shadow:0 1px 2px rgba(10,25,45,.06), 0 8px 24px rgba(10,25,45,.10);
+  --shadow-lift:0 2px 4px rgba(10,25,45,.08), 0 14px 34px rgba(10,25,45,.18);
+  --font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"SF Mono", ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
 
-<!-- ============ НЭВТРЭХ ============ -->
-<div class="screen active" id="scrLogin">
-  <div class="login-box">
-    <h1>Хөргүүрийн бүртгэл</h1>
-    <p class="lead">Кодоо оруулж нэвтэрнэ үү</p>
-    <div class="code-inputs">
-      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="1-р орон">
-      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="2-р орон">
-      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="3-р орон">
-      <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="4-р орон">
-    </div>
-    <div class="error-msg" id="errorMsg"></div>
-    <button class="btn btn-in" id="loginBtn" onclick="checkCode()">Нэвтрэх</button>
-    <div class="hint" id="lockWarn" style="display:none;color:var(--rust)">
-      Сервертэй холбогдож байна…<br>Холбогдмогц нэвтрэх боломжтой болно</div>
-    
-  </div>
-</div>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;}
+body{
+  background:var(--navy);
+  font-family:var(--font);
+  font-size:17px;
+  line-height:1.45;
+  color:var(--ink);
+  -webkit-text-size-adjust:100%;
+  font-variant-numeric:tabular-nums;
+}
 
-<!-- ============ ҮНДСЭН ЦЭС ============ -->
-<div class="screen" id="scrHome">
-  <h1 class="page-title">Үндсэн цэс</h1>
-  <div class="sub"><span id="homeDate"></span> · <span id="syncLine"></span></div>
-  <div class="card" id="homeLock" style="display:none;border-color:var(--rust)">
-    <div class="empty" style="color:var(--rust)">Сервертэй холбогдоогүй байна.<br>
-      Холбогдох хүртэл бүх үйлдэл түр хаалттай.</div>
-  </div>
-  <div class="menu">
-    <button class="btn btn-in" onclick="openDash()" id="btnDash">Хяналтын самбар</button>
-    <button class="btn" onclick="openFridge(1)" id="btnF1">1-р хөргүүр</button>
-    <button class="btn" onclick="openFridge(2)" id="btnF2">2-р хөргүүр</button>
-    <button class="btn" onclick="openBuy()" id="btnBuy">Гаднаас худалдаж авсан</button>
-    <button class="btn" onclick="openSalary()">Цалин</button>
-    <button class="btn" onclick="openCount()">Тоолох</button>
-    <button class="btn" onclick="openAdmin()" id="btnAdmin">Тохиргоо</button>
-  </div>
-  <button class="logout" onclick="logout()">Гарах</button>
-</div>
+.screen{display:none;min-height:100dvh;flex-direction:column;padding:0 0 40px;}
+.screen.active{display:flex;}
+.wrap,.card,.seg,.row-2,.save-wrap,.menu{width:100%;max-width:480px;margin-left:auto;margin-right:auto;}
 
-<!-- ============ ХЯНАЛТЫН САМБАР ============ -->
-<div class="screen" id="scrDash">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Хяналтын самбар</h2></div>
-  <div class="card">
-    <h3>Огноо</h3>
-    <input type="date" class="date-in" id="dashDate" onchange="setDashDate(this.value)">
-  </div>
-  <div class="card"><h3>Одоогийн үлдэгдэл</h3><div class="scroll-box" id="dashStock"></div></div>
-  <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
-  <div class="card"><h3>Тэр өдөр гарсан</h3><div id="dashOut"></div></div>
-  <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
-  <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
-</div>
+.bar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:10px;
+  padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;
+  background:rgba(21,41,65,.94);
+  backdrop-filter:saturate(160%) blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:18px;
+}
+.back{
+  padding:9px 14px;background:rgba(255,255,255,.1);color:#eaf1f8;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;
+  font:inherit;font-size:15px;font-weight:600;cursor:pointer;flex-shrink:0;
+}
+.back:active{background:rgba(255,255,255,.18);}
+.bar h2{
+  margin:0;color:#fff;font-size:19px;font-weight:650;letter-spacing:-.01em;
+  flex:1;text-align:center;padding-right:76px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 
-<!-- ============ БАРААНЫ ТҮҮХ ============ -->
-<div class="screen" id="scrItemHist">
-  <div class="bar"><button class="back" onclick="openDash()">Буцах</button><h2 id="ihTitle"></h2></div>
-  <div class="card">
-    <h3>Хугацаа</h3>
-    <p class="label">Эхлэх огноо</p>
-    <input type="date" class="date-in" id="ihFrom" onchange="setItemHistFrom(this.value)">
-    <p class="label" style="margin-top:12px">Дуусах огноо</p>
-    <input type="date" class="date-in" id="ihTo" onchange="setItemHistTo(this.value)">
-  </div>
-  <div id="ihBody"></div>
-</div>
+.page-title{
+  color:#fff;font-size:27px;font-weight:680;letter-spacing:-.02em;
+  text-align:center;margin:34px 0 4px;
+}
+.sub{color:#9db1c8;font-size:15px;text-align:center;margin:0 auto 22px;padding:0 16px;max-width:480px;}
 
-<!-- ============ ХӨРГҮҮР ============ -->
-<div class="screen" id="scrFridge">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="frTitle"></h2></div>
-  <div class="card"><h3>Үлдэгдэл · <span id="frDate"></span></h3><div class="scroll-box" id="frList"></div></div>
-  <div class="row-2">
-    <button class="btn btn-in" onclick="openEntry()">Оруулах</button>
-    <button class="btn btn-out" onclick="openOut()">Гаргах</button>
-  </div>
-  <div class="card"><h3 id="mvTitle">Өнөөдөр</h3><div class="scroll-box" id="mvList"></div></div>
-</div>
+.card{
+  background:var(--cream);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--r-lg);
+  padding:16px 15px;
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
+}
+.card h3{
+  margin:0 0 14px;font-size:12px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.09em;
+  padding-bottom:10px;border-bottom:1px solid var(--line);
+}
+.scroll-box{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 
-<!-- ============ ОРУУЛАХ ============ -->
-<div class="screen" id="scrEntry">
-  <div class="bar"><button class="back" onclick="backToFridge()">Буцах</button><h2 id="enTitle"></h2></div>
-  <div class="card">
-    <h3>Огноо</h3>
-    <input type="date" class="date-in" id="enDate" onchange="setEntryDate(this.value)">
-  </div>
-  <div class="card">
-    <p class="label">Хянаж оруулсан</p>
-    <div class="sel" id="sel_recorder"></div>
-  </div>
-  <div class="card">
-    <h3>Оруулах бараа</h3>
-    <div class="tool-row">
-      <button onclick="pickAll('entry',true)">Бүгдийг сонгох</button>
-      <button onclick="pickAll('entry',false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" id="entryItems"></div>
-  </div>
-  <div class="card">
-    <h3>Хураангуй</h3>
-    <div id="entrySummary"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-in" id="entrySave" onclick="saveEntry()">Хадгалах</button></div>
-</div>
+#scrLogin{align-items:center;justify-content:center;padding:20px;}
+.login-box{
+  background:var(--cream);padding:32px 24px;border-radius:var(--r-xl);
+  width:100%;max-width:340px;text-align:center;box-shadow:var(--shadow-lift);
+}
+.login-box h1{margin:0 0 6px;font-size:21px;font-weight:680;color:var(--blue-ink);letter-spacing:-.01em;}
+.login-box .lead{margin:0 0 22px;font-size:14px;color:var(--muted);}
+.code-inputs{display:flex;gap:10px;justify-content:center;margin-bottom:14px;}
+.code-inputs input{
+  width:100%;max-width:60px;aspect-ratio:1/1.1;text-align:center;
+  font:inherit;font-size:26px;font-weight:650;
+  border:1.5px solid var(--line);border-radius:var(--r-md);
+  background:var(--paper);outline:none;color:var(--ink);
+  transition:border-color .15s, box-shadow .15s;
+}
+.code-inputs input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,92,138,.14);}
+.error-msg{color:var(--rust);font-size:14px;font-weight:600;min-height:20px;margin-bottom:10px;}
+.hint{color:var(--muted);font-size:13px;margin-top:16px;}
 
-<!-- ============ ГАДНААС ХУДАЛДАЖ АВСАН ============ -->
-<div class="screen" id="scrBuy">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Гаднаас авсан</h2></div>
-  <div class="card">
-    <h3>Огноо</h3>
-    <input type="date" class="date-in" id="buyDate" onchange="setBuyDate(this.value)">
-  </div>
-  <div class="card">
-    <h3>Аль хөргүүрт хийх вэ</h3>
-    <div class="seg" style="margin:0" id="buySeg">
-      <button class="on" onclick="setBuyFridge(1,this)" id="buyBtn1">1-р хөргүүр</button>
-      <button onclick="setBuyFridge(2,this)" id="buyBtn2">2-р хөргүүр</button>
-    </div>
-  </div>
-  <div class="card">
-    <p class="label">Хэнээс авсан</p>
-    <div class="sel" id="sel_supplier"></div>
-    <div class="stack" id="buyOrgBox" style="display:none;margin-top:12px">
-      <input type="text" id="bsName" placeholder="Байгууллагын нэр">
-      <input type="text" id="bsReg" placeholder="Регистрийн дугаар">
-      <input type="tel"  id="bsPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addSupplierInline()">Нэмээд сонгох</button>
-    </div>
-    <div class="stack" id="buyPersonBox" style="display:none;margin-top:12px">
-      <input type="text" id="bpName" placeholder="Хувь хүний нэр">
-      <input type="tel"  id="bpPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addSupplierPersonInline()">Нэмээд сонгох</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Авсан бараа</h3>
-    <div class="tool-row">
-      <button onclick="pickAll('buy',true)">Бүгдийг сонгох</button>
-      <button onclick="pickAll('buy',false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" id="buyItems"></div>
-    <div id="buyTotal"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-in" id="buySave" onclick="saveBuy()">Хадгалах</button></div>
-</div>
+.btn{
+  display:block;width:100%;padding:15px 14px;font:inherit;
+  font-size:17px;font-weight:640;border:1px solid var(--line);border-radius:var(--r-md);
+  cursor:pointer;background:var(--cream);color:var(--blue-ink);text-align:center;
+  box-shadow:var(--shadow);transition:transform .08s, background .15s;
+}
+.btn:active{transform:translateY(1px);}
+.btn-in{background:var(--blue);border-color:var(--blue);color:#fff;}
+.btn-in:active{background:var(--blue-dark);}
+.btn-out{background:var(--rust);border-color:var(--rust);color:#fff;}
+.btn-out:active{background:#8d3f2b;}
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,.2);color:#dce6f1;box-shadow:none;}
+.btn[disabled]{opacity:.5;cursor:default;}
+.btn-sm{padding:11px 12px;font-size:15px;}
+.menu{display:flex;flex-direction:column;gap:10px;max-width:340px;}
+.menu .btn{text-align:left;padding-left:18px;position:relative;}
+.menu .btn::after{content:"›";position:absolute;right:16px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:20px;font-weight:400;}
+.menu .btn-in::after{color:rgba(255,255,255,.6);}
+.row-2{display:flex;gap:10px;margin-bottom:12px;}
+.row-2>*{flex:1;}
+.save-wrap{margin-top:4px;}
+.logout{
+  margin:28px auto 0;background:none;border:none;color:#8ea4bd;
+  font:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:8px;
+  text-decoration:underline;text-underline-offset:3px;
+}
 
-<!-- ============ ГАРГАХ ============ -->
-<div class="screen" id="scrOut">
-  <div class="bar"><button class="back" onclick="leaveOut()">Буцах</button><h2 id="outTitle"></h2></div>
-  <div class="card">
-    <p class="label">Хүлээн авагч</p>
-    <div class="sel" id="sel_partner"></div>
-    <div class="stack" id="newOrgBox" style="display:none;margin-top:12px">
-      <input type="text" id="noName" placeholder="Байгууллагын нэр">
-      <input type="text" id="noReg" placeholder="Регистрийн дугаар">
-      <input type="tel"  id="noPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addOrgInline()">Нэмээд сонгох</button>
-    </div>
-    <div class="stack" id="personBox" style="display:none;margin-top:12px">
-      <input type="text" id="personName" placeholder="Хувь хүний нэр">
-      <input type="tel"  id="personPhone" placeholder="Утас">
-      <button class="btn btn-in btn-sm" onclick="addPersonInline()">Нэмээд сонгох</button>
-    </div>
-  </div>
-  <div class="card">
-    <p class="label">Олгосон ажилтан</p>
-    <div class="sel" id="sel_issuer"></div>
-  </div>
-  <div class="card">
-    <h3>Гаргах бараа</h3>
-    <div class="tool-row">
-      <button onclick="pickAll('out',true)">Бүгдийг сонгох</button>
-      <button onclick="pickAll('out',false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" id="outItems"></div>
-    <div id="outTotal"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-out" id="outSave" onclick="makeReceipt()">Баримт гаргах</button></div>
-</div>
+.item-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line-soft);}
+.item-row:last-child{border-bottom:none;}
+.item-name{font-size:16px;font-weight:600;color:var(--ink);min-width:0;}
+.item-name small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:2px;}
 
-<!-- ============ БАРИМТ ============ -->
-<div class="screen" id="scrReceipt">
-  <div class="bar"><button class="back" onclick="closeReceipt()">Буцах</button><h2>Төлбөрийн баримт</h2></div>
-  <div id="rcBody"></div>
-  <div class="row-2 no-print">
-    <button class="btn btn-in btn-sm" onclick="printReceipt()">2 хувь хэвлэх</button>
-    <button class="btn btn-sm" onclick="editCurrentReceipt()">Засах</button>
-    <button class="btn btn-sm" onclick="closeReceipt()">Хаах</button>
-  </div>
-</div>
+.item-val{
+  font-size:19px;font-weight:680;color:var(--blue-ink);
+  white-space:nowrap;text-align:right;letter-spacing:-.02em;
+}
+.item-val small{display:block;font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0;margin-top:1px;}
+.empty{color:var(--muted);font-size:15px;text-align:center;padding:22px 8px;line-height:1.5;}
 
-<!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
-<div class="screen" id="scrDebt">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
-  <div class="seg" id="debtSeg">
-    <button class="on" onclick="setDebtKind('due',this)">Авлага</button>
-    <button onclick="setDebtKind('owe',this)">Өглөг</button>
-  </div>
-  <div class="card">
-    <h3>Шүүлтүүр</h3>
-    <div class="tool-row" style="margin-bottom:12px">
-      <button class="on" id="dbR1" onclick="setDebtRange('month')">Сараар</button>
-      <button id="dbR2" onclick="setDebtRange('day')">Өдрөөр</button>
-      <button id="dbR3" onclick="setDebtRange('all')">Бүгд</button>
-    </div>
-    <input type="month" class="date-in" id="debtMonth" onchange="setDebtMonth(this.value)">
-    <input type="date" class="date-in" id="debtDate" onchange="setDebtDate(this.value)" style="display:none">
-    <p class="label" style="margin-top:14px">Нэрээр хайх</p>
-    <input type="text" class="search-in" id="debtSearch" placeholder="Байгууллага, хүний нэр" oninput="setDebtSearch(this.value)">
-    <div class="tool-row" style="margin:12px 0 0">
-      <button class="on" id="dbShow1" onclick="setDebtShow('open',this)">Үлдэгдэлтэй</button>
-      <button id="dbShow2" onclick="setDebtShow('done',this)">Дууссан</button>
-      <button id="dbShow3" onclick="setDebtShow('all',this)">Бүгд</button>
-    </div>
-  </div>
-  <div class="card"><h3>Дүн</h3><div id="debtSummary"></div></div>
-  <div class="card"><h3>Харилцагчид</h3><div class="scroll-box" style="max-height:58vh" id="debtList"></div></div>
-</div>
+.label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:0 0 9px;}
+.sel{position:relative;width:100%;}
+.sel-head{
+  display:flex;align-items:center;gap:10px;width:100%;padding:14px;
+  border:1.5px solid var(--line);border-radius:var(--r-md);background:var(--paper);
+  font:inherit;font-size:16px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;
+}
+.sel-head.ph{color:var(--muted);font-weight:500;}
+.sel.open .sel-head{border-color:var(--blue);border-radius:var(--r-md) var(--r-md) 0 0;}
+.sel-val{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.caret{font-size:11px;color:var(--muted);}
+.sel-body{
+  display:none;max-height:236px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  border:1.5px solid var(--blue);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);background:var(--paper);
+}
+.sel.open .sel-body{display:block;}
+.sel-opt{
+  display:flex;align-items:center;gap:14px;width:100%;padding:13px 14px;
+  border:none;border-bottom:1px solid var(--line-soft);background:var(--paper);
+  color:var(--ink);font:inherit;font-size:16px;font-weight:550;cursor:pointer;text-align:left;
+}
+.sel-opt:last-child{border-bottom:none;}
+.sel-opt.on{background:#eef4fa;color:var(--blue-ink);font-weight:650;}
 
-<!-- ============ БАРИМТ, ТҮҮХ ============ -->
-<div class="screen" id="scrRecords">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөдөлгөөний тайлан</h2></div>
-  <div class="seg" id="recSeg">
-    <button class="on" onclick="setRecFridge(1,this)" id="recBtn1">1-р хөргүүр</button>
-    <button onclick="setRecFridge(2,this)" id="recBtn2">2-р хөргүүр</button>
-  </div>
-  <div class="card">
-    <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="recMonth" onchange="setRecMonth(this.value)">
-  </div>
-  <div class="card">
-    <h3>Өдөр бүрийн үлдэгдэл</h3>
-    <div id="recList"></div>
-  </div>
-</div>
+.tick{
+  flex-shrink:0;width:30px;height:30px;border:1.5px solid var(--line);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;
+  color:transparent;background:var(--paper);transition:background .12s,border-color .12s;
+}
+.on>.tick,.sel-opt.on .tick,.check-row.on .tick{background:var(--blue);border-color:var(--blue);color:#fff;}
+.tool-row{display:flex;gap:8px;margin-bottom:12px;}
+.tool-row button{
+  flex:1;padding:9px 6px;border:1px solid var(--line);border-radius:999px;
+  background:var(--paper);color:var(--blue-ink);font:inherit;font-size:13px;font-weight:650;cursor:pointer;
+}
+.tool-row button:active{background:var(--line-soft);}
+.tool-row button.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.pick{border-bottom:1px solid var(--line-soft);padding:2px 0;}
+.pick:last-child{border-bottom:none;}
+.check-row{
+  display:flex;align-items:center;gap:14px;width:100%;padding:13px 2px;
+  border:none;background:none;font:inherit;font-size:16px;font-weight:600;
+  color:var(--ink);cursor:pointer;text-align:left;line-height:1.35;
+}
+.check-row.on{color:var(--blue-ink);}
+.check-row small{color:var(--muted);font-weight:500;font-size:13px;}
 
-<div class="screen" id="scrAudit">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Засварын түүх</h2></div>
-  <div class="card">
-    <h3>Баримтад хийсэн засварууд</h3>
-    <div class="tool-row"><button onclick="deleteSelectedAudits()">Сонгосныг устгах</button></div>
-    <div class="scroll-box" style="max-height:64vh" id="auditList"></div>
-  </div>
-</div>
+.pick-fields{display:flex;gap:8px;padding:0 2px 10px 44px;}
+.check-2{display:flex;gap:10px;}
+.check-2 .check-row{flex:1;min-width:0;}
+.fld{flex:1;display:flex;align-items:center;gap:7px;min-width:0;}
+.fld span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+input.num-in,.calc-row input,.date-in,.search-in,.stack input,.add-row input,.edit-row input,select.opt-sel,textarea{
+  font:inherit;border:1.5px solid var(--line);border-radius:var(--r-sm);
+  background:var(--paper);color:var(--ink);
+}
+input.num-in:focus,.calc-row input:focus,.date-in:focus,.search-in:focus,
+.stack input:focus,.add-row input:focus,.edit-row input:focus,select.opt-sel:focus,textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,92,138,.12);
+}
+input.num-in{width:100%;min-width:0;padding:11px 10px;font-size:17px;font-weight:650;text-align:right;}
+.line-sum{font-size:13px;font-weight:600;color:var(--muted);padding:0 2px 10px 44px;}
 
-<!-- ============ ЦАЛИН ============ -->
-<div class="screen" id="scrSalary">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2 id="salTitle">Цалин</h2></div>
-  <div class="card">
-    <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="salMonth" onchange="setSalMonth(this.value)">
-  </div>
-  <div class="card">
-    <h3>Ажилчдын цалин · өдрөөр</h3>
-    <div id="salBody"></div>
-  </div>
-  <div class="card" id="salAddCard" style="display:none">
-    <h3>Ажилчин нэмэх</h3>
-    <div class="add-row">
-      <input type="text" id="salNewWorkerName" placeholder="Шинэ ажилчны нэр">
-      <button onclick="addWorkerInline()">Нэмэх</button>
-    </div>
-    <button class="btn btn-in" style="margin-top:16px" onclick="openWork()">＋ Ажлын бүртгэл нэмэх</button>
-    <button class="btn btn-sm" style="margin-top:10px" onclick="openAttend()">Тогтмол цалинтай ажилчдын ирц</button>
-  </div>
-  <div class="card" id="salUnlockCard">
-    <button class="btn btn-sm" onclick="unlockSalaryAdmin()">Цалин бодох</button>
-  </div>
-</div>
+.item-cfg{border-bottom:1px solid var(--line);padding:14px 0;}
+.item-cfg:first-child{padding-top:0;}
+.item-cfg:last-child{border-bottom:none;padding-bottom:0;}
+.cfg-row{display:flex;align-items:center;gap:10px;margin-top:9px;}
+.cfg-row .cl{flex:1;font-size:14px;font-weight:550;color:var(--muted);}
+select.opt-sel{padding:9px 8px;font-size:15px;font-weight:600;}
+.edit-row{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft);}
+.edit-row:last-child{border-bottom:none;}
+.edit-row input{flex:1;min-width:0;padding:11px 10px;font-size:16px;font-weight:600;}
+.edit-row .nm{flex:1;font-size:16px;font-weight:600;color:var(--ink);min-width:0;}
+.edit-row .nm small{display:block;font-size:13px;font-weight:500;color:var(--muted);}
+.icon-btn{
+  padding:10px 13px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--paper);color:var(--rust);font:inherit;font-size:14px;font-weight:650;cursor:pointer;flex-shrink:0;
+}
+.icon-btn:active{background:var(--rust-soft);}
+.icon-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;}
+.add-row{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+.add-row input{flex:1;min-width:0;padding:12px 10px;font-size:16px;}
+.add-row button{padding:12px 18px;border:1px solid var(--blue);border-radius:var(--r-sm);background:var(--blue);color:#fff;font:inherit;font-size:16px;font-weight:650;cursor:pointer;}
+.stack input{width:100%;padding:12px 10px;font-size:16px;font-weight:600;margin-bottom:9px;}
+.date-in,.search-in{width:100%;padding:12px 10px;font-size:16px;font-weight:600;}
+textarea{width:100%;padding:10px;font-size:13px;font-family:var(--mono);}
 
-<!-- ============ АЖИЛЧНЫ ДЭЛГЭРЭНГҮЙ ============ -->
-<div class="screen" id="scrWorker">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2 id="wdTitle"></h2></div>
-  <div class="card">
-    <h3>Он, сар</h3>
-    <input type="month" class="date-in" id="wdMonth" onchange="setSalMonth(this.value);renderWorkerDetail()">
-  </div>
-  <div id="wdBody"></div>
-</div>
+.seg{display:flex;gap:6px;margin-bottom:16px;padding:4px;background:rgba(255,255,255,.07);border-radius:999px;}
+.seg button{
+  flex:1;padding:9px 4px;border:none;border-radius:999px;background:transparent;
+  color:#b9cadd;font:inherit;font-size:14px;font-weight:650;cursor:pointer;
+}
+.seg button.on{background:var(--cream);color:var(--blue-ink);box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.card .seg{background:var(--line-soft);}
+.card .seg button{color:var(--muted);}
+.card .seg button.on{background:var(--blue);color:#fff;}
 
-<!-- ============ ТОГТМОЛ ЦАЛИНТАЙ АЖИЛЧДЫН ИРЦ ============ -->
-<div class="screen" id="scrAttend">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ирц тэмдэглэх</h2></div>
-  <div class="card">
-    <h3>Огноо</h3>
-    <input type="date" class="date-in" id="attDate" onchange="setAttendDate(this.value)">
-  </div>
-  <div class="card">
-    <h3>Тухайн өдөр ажилласан хүмүүс</h3>
-    <div class="tool-row">
-      <button onclick="allAttendWorkers(true)">Бүгдийг сонгох</button>
-      <button onclick="allAttendWorkers(false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" id="attList"></div>
-  </div>
-  <div class="card">
-    <h3>Тооцоо</h3>
-    <div id="attTotal"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-in" id="attSave" onclick="saveAttend()">Хадгалах</button></div>
-</div>
+.total-line{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:14px 2px 4px;border-top:1.5px solid var(--line);margin-top:8px;
+  font-size:15px;font-weight:600;color:var(--muted);
+}
+.total-line b{font-size:21px;font-weight:700;color:var(--blue-ink);letter-spacing:-.02em;}
+.count-total{text-align:center;font-size:36px;font-weight:800;color:var(--blue-ink);letter-spacing:-.02em;padding:12px 0 2px;font-variant-numeric:tabular-nums;}
 
-<!-- ============ АЖЛЫН БҮРТГЭЛ ============ -->
-<div class="screen" id="scrWork">
-  <div class="bar"><button class="back" onclick="openSalary()">Буцах</button><h2>Ажлын бүртгэл</h2></div>
-  <div class="card">
-    <h3>Огноо</h3>
-    <input type="date" class="date-in" id="workDate" onchange="setWorkDate(this.value)">
-  </div>
-  <div class="card">
-    <p class="label">Ажилчин</p>
-    <div class="sel" id="sel_workw"></div>
-  </div>
-  <div class="card">
-    <h3>Ямар ангилал дээр хэдийг хийсэн</h3>
-    <div class="tool-row">
-      <button onclick="pickAll('work',true)">Бүгдийг сонгох</button>
-      <button onclick="pickAll('work',false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" id="workItems"></div>
-  </div>
-  <div class="card">
-    <h3>Тооцоо</h3>
-    <div id="workTotal"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-in" id="workSave" onclick="saveWork()">Хадгалах</button></div>
-</div>
+.cnt-grid{
+  display:flex;flex-direction:column;gap:7px;
+  height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:2px 2px 4px;
+}
+.cnt-cell{
+  display:flex;align-items:center;gap:4px;flex-shrink:0;
+  border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--paper);padding:4px 4px 4px 10px;
+}
+.cnt-cell input{
+  flex:1;min-width:0;border:none;background:none;padding:6px 0;
+  font-size:16px;font-weight:650;text-align:center;color:var(--ink);
+}
+.cnt-cell input:focus{outline:none;}
+.cnt-del{
+  flex-shrink:0;width:24px;height:24px;border:none;border-radius:6px;background:none;
+  color:var(--rust);font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.cnt-del:active{background:var(--rust-soft);}
 
-<!-- ============ ТООЛОХ ============ -->
-<div class="screen" id="scrCount">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тоолох</h2></div>
-  <div class="card">
-    <h3>Ангилал сонгоно уу</h3>
-    <div class="scroll-box" id="countList"></div>
-  </div>
-</div>
+.calc-w{border-bottom:1px solid var(--line-soft);padding:12px 0;}
+.calc-w:first-child{padding-top:0;}
+.calc-w:last-child{border-bottom:none;padding-bottom:0;}
+.calc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;color:var(--blue-ink);font-size:16px;font-weight:680;margin-bottom:8px;}
+.calc-row{display:flex;align-items:center;gap:8px;padding:4px 0;}
+.calc-row .cn{flex:1;font-size:15px;font-weight:550;color:var(--ink);}
+.calc-row input{width:104px;padding:9px 8px;font-size:16px;font-weight:650;text-align:right;}
+.calc-row .cu{font-size:12px;font-weight:700;color:var(--muted);width:26px;text-transform:uppercase;}
+.sal-detail{background:#f2f5f9;border:1px solid var(--line-soft);border-radius:var(--r-md);padding:12px;margin:0 0 12px;}
+.sal-detail .item-row{border-bottom-color:#e2e8f0;}
 
-<div class="screen" id="scrCountEntry">
-  <div class="bar"><button class="back" onclick="openCount()">Буцах</button><h2 id="cntTitle">Тоолох</h2></div>
-  <div class="card">
-    <h3>Тоолсон тоонууд</h3>
-    <div class="cnt-grid" id="cntRows"></div>
-    <div id="cntTotal"></div>
-  </div>
-  <div class="save-wrap"><button class="btn btn-in" id="cntSave" onclick="saveCount()">Хадгалах</button></div>
-  <div class="card">
-    <h3>Өмнөх тооллого</h3>
-    <div class="scroll-box" id="cntHist"></div>
-  </div>
-</div>
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);}
+table.tbl{border-collapse:collapse;width:100%;min-width:430px;font-size:13px;}
+table.tbl th{
+  position:sticky;top:0;z-index:1;
+  background:var(--cream);color:var(--muted);
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  text-align:left;padding:9px 8px;border-bottom:1.5px solid var(--line);white-space:nowrap;
+}
+table.tbl td{padding:9px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink);}
+table.tbl tr:last-child td{border-bottom:none;}
+table.tbl .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+table.tbl .amt{text-align:right;white-space:nowrap;font-weight:700;color:var(--blue-ink);}
+table.tbl .dim{color:var(--muted);font-size:12px;}
+table.tbl .nm{font-weight:600;}
+table.tbl tr.day-head td{
+  background:#eaf0f7;color:var(--blue-ink);font-weight:700;font-size:12px;
+  letter-spacing:.02em;padding:8px;border-bottom:1px solid var(--line);
+}
+table.tbl tr.day-head td.amt{color:var(--blue-ink);}
+table.tbl tr.sum td{background:var(--cream);font-weight:700;border-top:1.5px solid var(--line);}
+.tbl-note{font-size:12px;color:var(--muted);margin:8px 2px 0;}
 
-<!-- ============ ТОХИРГОО ============ -->
-<div class="screen" id="scrAdmin">
-  <div class="bar"><button class="back" onclick="goHome()">Буцах</button><h2>Тохиргоо</h2></div>
-  <div class="menu">
-    <button class="btn" onclick="openDebt()">Өглөг, авлага</button>
-    <button class="btn" onclick="openRecords()">Баримт, түүх</button>
-    <button class="btn" onclick="openAudit()">Засварын түүх</button>
-    <button class="btn" onclick="openItems()">Бараа, үнэ</button>
-    <button class="btn" onclick="openFridgeItems()">Хөргүүрийн ангилал</button>
-    <button class="btn" onclick="openWorkers()">Ажилчид</button>
-    <button class="btn" onclick="openRates()">Цалингийн тариф</button>
-    <button class="btn" onclick="openPartners()">Харилцагч · хувь хүн</button>
-    <button class="btn" onclick="openCompany()">Байгууллагын мэдээлэл</button>
-    <button class="btn" onclick="openCodes()">Нэвтрэх код</button>
-    <button class="btn" onclick="openDevice()">Энэ төхөөрөмжийн дугаар</button>
-    <button class="btn" onclick="openBackup()">Нөөцлөх</button>
-  </div>
-</div>
+table.tbl th:first-child,table.tbl td:first-child{
+  position:sticky;left:0;z-index:2;background:var(--paper);
+  box-shadow:1px 0 0 var(--line);
+}
+table.tbl th:first-child{z-index:3;background:var(--cream);}
+table.tbl tr.sum td:first-child,table.tbl tr.day-head td:first-child{background:var(--cream);}
+.chain{font-size:13px;font-weight:600;color:var(--muted);word-break:break-word;display:block;margin-top:2px;}
 
-<div class="screen" id="scrItems">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Бараа, үнэ</h2></div>
-  <div class="card">
-    <h3>Ангилал бүрийн нэгж ба үнэ</h3>
-    <div class="scroll-box" style="max-height:60vh" id="itemsEdit"></div>
-    <div class="add-row">
-      <input type="text" id="newItemName" placeholder="Шинэ барааны нэр">
-      <button onclick="addItem()">Нэмэх</button>
-    </div>
-  </div>
-</div>
+.mv-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line-soft);}
+.mv-row:last-child{border-bottom:none;}
+.mv-row .mn{font-size:16px;font-weight:600;color:var(--ink);}
+.mv-nums{font-size:14px;font-weight:650;white-space:nowrap;text-align:right;}
+.mv-in{color:var(--moss);}
+.mv-out{color:var(--rust);}
 
-<div class="screen" id="scrFridgeItems">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Хөргүүрийн ангилал</h2></div>
-  <div class="seg" id="fiSeg">
-    <button class="on" onclick="setFiFridge(1,this)" id="fiBtn1">1-р хөргүүр</button>
-    <button onclick="setFiFridge(2,this)" id="fiBtn2">2-р хөргүүр</button>
-  </div>
-  <div class="card">
-    <h3>Энэ хөргүүрт хадгалах бараа</h3>
-    <div class="tool-row">
-      <button onclick="allFi(true)">Бүгдийг сонгох</button>
-      <button onclick="allFi(false)">Цэвэрлэх</button>
-    </div>
-    <div class="scroll-box" style="max-height:58vh" id="fiList"></div>
-  </div>
-</div>
+.exp-head{
+  display:flex;align-items:center;gap:11px;width:100%;padding:13px 2px;
+  border:none;border-bottom:1px solid var(--line-soft);background:none;
+  font:inherit;cursor:pointer;text-align:left;
+}
+.exp-head:last-child{border-bottom:none;}
+.exp-arrow{flex-shrink:0;width:16px;color:var(--muted);font-size:12px;}
+.exp-main{flex:1;min-width:0;font-size:16px;font-weight:650;color:var(--ink);}
+.exp-main small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:2px;}
+.exp-val{font-size:16px;font-weight:700;color:var(--blue-ink);white-space:nowrap;text-align:right;}
+.exp-body{background:#f2f5f9;border:1px solid var(--line-soft);border-radius:var(--r-md);padding:4px 12px 10px;margin:0 0 10px;}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.01em;}
+.pill-due{background:var(--rust-soft);color:var(--rust);}
+.pill-ok{background:var(--moss-soft);color:var(--moss);}
+.paid{opacity:.55;}
+.grp-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:12px 2px 6px;margin-top:6px;
+  font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+}
+.mini{font-size:13px;font-weight:500;color:var(--muted);}
 
-<div class="screen" id="scrWorkers">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Ажилчид</h2></div>
-  <div class="card">
-    <h3>Ажилчдын жагсаалт</h3>
-    <div class="scroll-box" style="max-height:58vh" id="workersEdit"></div>
-    <div class="add-row">
-      <input type="text" id="newWorkerName" placeholder="Шинэ ажилчны нэр">
-      <button onclick="addWorker()">Нэмэх</button>
-    </div>
-  </div>
-</div>
+.receipt{
+  background:var(--paper);color:#000;width:100%;max-width:340px;margin:0 auto 16px;
+  padding:20px 18px;font-family:var(--mono);font-weight:600;font-size:13.5px;line-height:1.62;
+  box-shadow:var(--shadow-lift);border-radius:2px;
+}
+.receipt .stars{white-space:nowrap;overflow:hidden;letter-spacing:1px;}
+.receipt .ctr{text-align:center;}
+.receipt .co{font-weight:800;font-size:15px;letter-spacing:.02em;}
+.receipt .copy{font-weight:800;}
+.receipt .ln{border-top:1px dashed #999;margin:9px 0;}
+.receipt .big{font-weight:800;font-size:15px;}
+.receipt .bank{border:1px solid #000;padding:8px 9px;margin-top:10px;}
+.receipt .sig{margin-top:16px;}
+.receipt .sig-line{border-bottom:1px solid #000;height:26px;margin:2px 0 10px;}
 
-<div class="screen" id="scrRates">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Цалингийн тариф</h2></div>
-  <div class="card">
-    <p class="label">Ажилчин</p>
-    <div class="sel" id="sel_rate"></div>
-  </div>
-  <div class="card" id="rateCard" style="display:none">
-    <h3 id="rateWho"></h3>
-    <div class="scroll-box" id="ratesEdit"></div>
-  </div>
-</div>
+/* ---------- Мэдэгдэл ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);
+  transform:translateX(-50%) translateY(180%);
+  background:var(--navy-2);color:#fff;padding:13px 20px;border-radius:999px;
+  font-size:15px;font-weight:600;box-shadow:var(--shadow-lift);
+  transition:transform .28s cubic-bezier(.2,.8,.3,1);z-index:99;max-width:90vw;text-align:center;
+  border:1px solid rgba(255,255,255,.14);
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
 
-<div class="screen" id="scrPartners">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Харилцагч</h2></div>
-  <div class="card">
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-2px 0 12px">Дарж дэлгээд нэр нэмэх, хасах боломжтой</p>
-    <div id="partyBox"></div>
-  </div>
-</div>
+.screen>.card,.screen>.seg,.screen>.row-2,.screen>.save-wrap,.screen>.menu,.screen>.sub{
+  padding-left:0;padding-right:0;
+}
+.screen{padding-left:14px;padding-right:14px;}
+.screen .bar{margin-left:-14px;margin-right:-14px;}
 
-<div class="screen" id="scrCompany">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Байгууллагын мэдээлэл</h2></div>
-  <div class="card">
-    <h3>Баримтын толгойд хэвлэгдэнэ</h3>
-    <div class="stack">
-      <input type="text" id="coName" placeholder="Байгууллагын нэр">
-      <input type="text" id="coPhone" placeholder="Холбогдох утас">
-      <input type="text" id="coReg" placeholder="Регистрийн дугаар">
-    </div>
-  </div>
-  <div class="card">
-    <h3>Мөнгө хүлээн авах данс</h3>
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Хувь хүнд бараа олгосон баримт дээр энэ данс хэвлэгдэнэ</p>
-    <div class="stack">
-      <input type="text" id="coBank" placeholder="Банкны нэр">
-      <input type="text" id="coAccount" placeholder="Дансны дугаар">
-      <input type="text" id="coAccName" placeholder="Данс эзэмшигчийн нэр">
-    </div>
-    <button class="btn btn-in btn-sm" onclick="saveCompany()">Хадгалах</button>
-  </div>
-</div>
-
-<div class="screen" id="scrCodes">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нэвтрэх код</h2></div>
-  <div class="card">
-    <h3>4 оронтой код</h3>
-    <div class="edit-row"><span class="nm">Ажилчны код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinWorker" style="max-width:110px;text-align:center"></div>
-    <div class="edit-row"><span class="nm">Админы код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinAdmin" style="max-width:110px;text-align:center"></div>
-    <div class="edit-row"><span class="nm">Цалингийн код</span>
-      <input type="tel" inputmode="numeric" maxlength="4" id="pinSalary" style="max-width:110px;text-align:center"></div>
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Цалингийн код нь "Цалин" хэсэгт "Цалин бодох" товчоор орж, ажилчин нэмэх,
-      ажлын бүртгэл нэмэх, урьдчилгаа, ирц удирдах эрх нээдэг — бусад хэсэгт хандах эрх өгөхгүй.</p>
-    <div style="margin-top:16px"><button class="btn btn-in" onclick="savePins()">Хадгалах</button></div>
-  </div>
-</div>
-
-<div class="screen" id="scrDevice">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Төхөөрөмжийн дугаар</h2></div>
-  <div class="card">
-    <h3>Энэ утас / компьютерийн дугаар</h3>
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">
-      Firebase → Firestore → app/devices доторх uids жагсаалтад энэ дугаарыг нэмбэл
-      энэ төхөөрөмж ажиллана. Жагсаалтад байхгүй төхөөрөмж өгөгдөл харахгүй.</p>
-    <div id="devUid" class="tbl-wrap" style="padding:12px;font-family:var(--mono);
-         font-size:13px;word-break:break-all;line-height:1.6"></div>
-    <button class="btn btn-in btn-sm" style="margin-top:12px" onclick="copyUid()">Дугаарыг хуулах</button>
-  </div>
-</div>
-
-<div class="screen" id="scrBackup">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Нөөцлөх</h2></div>
-  <div class="card">
-    <h3>Бүх мэдээлэл</h3>
-    <textarea id="bkText" style="height:150px"></textarea>
-    <div class="row-2" style="margin-top:12px">
-      <button class="btn btn-in btn-sm" onclick="copyBackup()">Хуулах</button>
-      <button class="btn btn-sm" onclick="restoreBackup()">Сэргээх</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Аюултай үйлдэл</h3>
-    <button class="btn btn-out btn-sm" onclick="wipeAll()">Бүх бүртгэлийг устгах</button>
-  </div>
-  <div class="card">
-    <h3>Энэ хэсгийн код</h3>
-    <p class="sub" style="text-align:left;color:var(--muted);margin:-4px 0 12px">Код зөвхөн сервер дээр хадгалагдана · утсанд ч, нөөцийн бичвэрт ч үлдэхгүй</p>
-    <button class="btn btn-sm" onclick="changeBackupPin()">Код солих</button>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-
-
-<script type="module" src="js/main.js"></script>
-</body>
-</html>
+@media (max-width:360px){
+  body{font-size:16px;}
+  .screen{padding-left:10px;padding-right:10px;}
+  .screen .bar{margin-left:-10px;margin-right:-10px;}
+  .pick-fields,.line-sum{padding-left:36px;}
+  .check-2{flex-direction:column;gap:0;}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+@media print{
+  body{background:#fff;}
+  .screen{display:none!important;}
+  #toast{display:none!important;}
+  #scrReceipt{display:block!important;min-height:auto;padding:0;}
+  #scrReceipt .bar,#scrReceipt .no-print{display:none!important;}
+  .receipt{box-shadow:none;max-width:100%;margin:0 0 10px;padding:0;border-radius:0;}
+  .receipt.copy2{page-break-before:always;}
+}
