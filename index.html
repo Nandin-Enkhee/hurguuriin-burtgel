@@ -106,7 +106,7 @@
   <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
   <div class="card"><h3>Тэр өдөр гарсан</h3><div id="dashOut"></div></div>
   <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
-  <div class="save-wrap"><button class="btn btn-in" onclick="openDebt()">Авлага, өглөг харах</button></div>
+  <div class="save-wrap"><button class="btn btn-in" onclick="openDebt('dash')">Авлага, өглөг харах</button></div>
 </div>
 
 <!-- ============ БАРААНЫ ТҮҮХ ============ -->
@@ -297,7 +297,7 @@
 
 <!-- ============ ӨГЛӨГ, АВЛАГА ============ -->
 <div class="screen" id="scrDebt">
-  <div class="bar"><button class="back" onclick="openAdmin()">Буцах</button><h2>Өглөг, авлага</h2></div>
+  <div class="bar"><button class="back" onclick="closeDebt()">Буцах</button><h2>Өглөг, авлага</h2></div>
   <div class="seg" id="debtSeg">
     <button class="on" onclick="setDebtKind('due',this)">Авлага</button>
     <button onclick="setDebtKind('owe',this)">Өглөг</button>
