@@ -17,6 +17,7 @@ import * as Records  from './records.js';
 import * as Salary   from './salary.js';
 import * as Settings from './settings.js';
 import * as Count    from './count.js';
+import * as XlsxExport from './xlsx-export.js';
 
 loadLocal();
 
@@ -24,7 +25,7 @@ Object.assign(window,
   { show:Router.show, toggleSel:UI.toggleSel, chooseSel:UI.chooseSel,
     toggleMultiSel:UI.toggleMultiSel, closeKeyboard:UI.closeKeyboard },
   { pickToggle:Picker.pickToggle, pickSet:Picker.pickSet, pickAll:Picker.pickAll },
-  Auth, Fridge, Entry, Work, Buy, Out, Receipt, Dash, Debt, Records, Salary, Settings, Count
+  Auth, Fridge, Entry, Work, Buy, Out, Receipt, Dash, Debt, Records, Salary, Settings, Count, XlsxExport
 );
 
 Auth.initLogin();
