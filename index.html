@@ -13,6 +13,8 @@
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
 <link rel="stylesheet" href="css/app.css">
+<!-- Сарын хөдөлгөөнийг Excel рүү экспортлоход хэрэглэнэ -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- ================= FIREBASE ТОХИРГОО ================= -->
 <script type="module">
   const firebaseConfig = {
@@ -107,6 +109,14 @@
   <div class="card"><h3>Тэр өдөр орсон</h3><div id="dashIn"></div></div>
   <div class="card"><h3>Тэр өдөр гарсан</h3><div id="dashOut"></div></div>
   <div class="card"><h3>Хаашаа гарсан</h3><div id="dashDest"></div></div>
+  <div class="card">
+    <h3>Сарын хөдөлгөөн · Excel</h3>
+    <p class="sub" style="text-align:left;color:var(--muted);margin:-2px 0 12px">
+      Сонгосон сард бүх хөргүүрт орсон, гарсан кг/ширхэгийг хөргүүр тус бүрээр
+      хуудаслаж Excel файлаар татна. Файлыг компьютер дээрээ нээгээд хэвлэж болно.</p>
+    <input type="month" class="date-in" id="dashXlsxMonth">
+    <button class="btn btn-in btn-sm" style="margin-top:12px" onclick="exportMonthXlsx()">Excel татах</button>
+  </div>
 </div>
 
 <!-- ============ БАРААНЫ ТҮҮХ ============ -->
