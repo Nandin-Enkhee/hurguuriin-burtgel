@@ -14,7 +14,7 @@ export function openDash(){
   DASH().openOrg=null;
   DASH().date = DASH().date || isoStr();
   const el=$("dashDate"); el.value=DASH().date; el.max=isoStr();
-  const xm=$("dashXlsxMonth"); if(xm && !xm.value) xm.value=isoMonth();
+  const xd=$("dashXlsxDate"); if(xd){ xd.value=DASH().date; xd.max=isoStr(); }
   renderDash(); show("scrDash");
 }
 export function setDashDate(v){ DASH().date = v || isoStr(); renderDash(); }
